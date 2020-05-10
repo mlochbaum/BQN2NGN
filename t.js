@@ -4,6 +4,7 @@ const S=JSON.stringify
 ,collectTests=s=>s.split('\n').filter(x=>x)
                   .map(x=>{let m=x.match(/^(.+)(←→|!!)(.*)$/);return[m[1].trim(),m[2].trim(),m[3].trim()]})
 ,runDocTest=([s,m,exp],exec,aprx)=>{ // s:code, m:mode, exp:expectation
+  if(/[⁼`]/.test(s))return{m:"skipped"}
   let x,y
   if(m==='←→'){
     try{y=exec(exp)}catch(e){return{e,m:'cannot compute expected value '+S(exp)}}
