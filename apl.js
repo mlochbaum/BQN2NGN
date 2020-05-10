@@ -315,7 +315,7 @@ voc['≤']=withId(1,perv(null,real((x,y)=>+(x<=y))))
 voc['≥']=withId(1,perv(null,real((x,y)=>+(x>=y))))
 voc['≡']=(y,x)=>has(x)? +match(y,x):depth(y)
 voc['≢']=(y,x)=>has(x)?1-match(y,x):A(new Float64Array(y.s))
-const depth=x=>{if(!x.isA||!x.s.length&&!x.a[0].isA)return 0
+const depth=x=>{if(!x.isA)return 0
                 let r=0,n=x.a.length;for(let i=0;i<n;i++)r=Math.max(r,depth(x.a[i]));return r+1}
 const mix=y=>{
   if(!y.isA||y.a.length===0)return y
