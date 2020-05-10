@@ -421,21 +421,21 @@ voc['⌜']=adv(f=>{
     }
   }
 })
-voc['¨']=adv(f=>{
-  f=toF(f)
+voc['¨']=adv(fn=>{
+  fn=toF(fn)
   return(y,x)=>{
     y=toA(y)
     if(!has(x)){
-      return A(Array.from(y.a).map(e=>f(e)),y.s)
-    }else if(!x.isA||x.s.length===0){
-      const u=x.isA?x.a[0]:x;return A(Array.from(y.a).map(e=>f(e,u)),y.s)
-    }else if(!y.isA||y.s.length===0){
-      const u=y.isA?y.a[0]:y;return A(Array.from(x.a).map(e=>f(u,e)),x.s)
+      return A(Array.from(y.a).map(e=>fn(e)),y.s)
     }else{
-      const n=x.a.length,r=Array(n)
-      x.s.length===y.s.length||rnkErr();for(let i=0;i<x.s.length;i++)if(x.s[i]!==y.s[i])lenErr()
-      for(let i=0;i<n;i++)r[i]=f(y.a[i],x.a[i])
-      return A(r,x.s)
+      x=toA(x);let e=y.s.length,f=x.s.length,w=0;if(e<f){w=1;let t=e;e=f;f=t}
+      for(let i=0;i<f;i++)y.s[i]===x.s[i]||lenErr()
+      const af=w?y:x,ae=w?x:y,c=prd(ae.s.slice(f));let r=Array(prd(af.s)*c)
+      for(let i=0,j=0;i<r.length;j++){
+        let u=af.a[j],f1=w?(a=>fn(u,a)):(a=>fn(a,u))
+        for(let ie=i+c;i<ie;i++)r[i]=f1(ae.a[i])
+      }
+      return A(r,ae.s)
     }
   }
 })
