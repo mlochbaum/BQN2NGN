@@ -451,7 +451,7 @@ const rank=(getK,f)=>{
   return(y,x)=>{
     let k=getVec(getK(y,x));1<=k.length&&k.length<=3||lenErr()
     let yx=[y=toA(y)];if(has(x))yx=yx.concat([x=toA(x)])
-    k.reverse();k=yx.map((a,i)=>efr(k[(i+yx.length-1)%k.length],a.s.length))
+    k.reverse();k=yx.map((a,i)=>efr(k[(i+(has(x)?0:2))%k.length],a.s.length))
     let fr=k[0],fe=fr,we=0;if(has(x)){let fx=k[1];we=fx>fr?1:0;if(we)fe=fx;else fr=fx}
     if(has(x))for(let i=0;i<fr;i++)y.s[i]===x.s[i]||lenErr()
     const fs=y.s.slice(0,fr),es=has(x)?yx[we].s.slice(fr,fe):[],cs=yx.map((a,i)=>a.s.slice(k[i])),c=cs.map(s=>prd(s))
@@ -461,7 +461,6 @@ const rank=(getK,f)=>{
       let f1=f;if(has(x)){let cc=cell(1-we,si*c[1-we]);f1=we?(a=>f(cc,a)):(a=>f(a,cc))}
       for(let je=j+el;j<je;i+=c[we],j++)r[j]=f1(cell(we,i))
     }
-    console.log(r)
     return mix(A(r,fs.concat(es)))
   }
 }
@@ -741,7 +740,7 @@ voc['`']=adv(f=>(y,x)=>{
 */
 voc['/']=(y,x)=>{
   if(has(x)){
-    const xa=getVec(x),a=!(x.toA&&x.s.length),n=y.s.length?y.s[0]:1
+    y=toA(y);const xa=getVec(x),a=x.isA&&x.s.length?1:0,n=y.s.length?y.s[0]:1
     !a||xa.length===n||lenErr()
     let l=0;for(let i=0;i<n;i++){const u=xa[i*a];isInt(u,0)||domErr();l+=u}
     const c=prd(y.s.slice(1))
@@ -770,7 +769,7 @@ voc['⊑']=(y,x)=>{
       i=i*y.s[s]+u
     }
   }
-  return toA(y.a.length?y.a[i]:0)
+  return y.a.length?y.a[i]:0
 }
 voc['⊏']=(y,x)=>{
   y.isA&&y.s.length||rnkErr()
