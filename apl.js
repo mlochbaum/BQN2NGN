@@ -445,16 +445,24 @@ voc['¨']=adv(f=>{
     }
   }
 })
-const rank=(k,f)=>{
-  f=toF(f)
-  const efr=(k,r)=>k<0?Math.max(k+r,0):Math.min(k,r)
+const rank=(getK,f)=>{
+  f=toF(f);getK=toF(getK)
+  const efr=(k,r)=>{k=toInt(k);return k<0?Math.min(-k,r):Math.max(r-k,0)} // effective frame
   return(y,x)=>{
-    x&&nyiErr()
-    k=toInt(toF(k)(y,x));y=toA(y);const e=y.s.length;k=efr(k,e);const fr=e-k
-    const fs=y.s.slice(0,fr),cs=y.s.slice(fr),c=prd(cs)
-    let r=Array(prd(fs))
-    for(let i=0,j=0;j<r.length;i+=c,j++)r[j]=f(A(y.a.slice(i,i+c),cs))
-    return mix(A(r,fs))
+    let k=getVec(getK(y,x));1<=k.length&&k.length<=3||lenErr()
+    let yx=[y=toA(y)];if(has(x))yx=yx.concat([x=toA(x)])
+    k.reverse();k=yx.map((a,i)=>efr(k[(i+yx.length-1)%k.length],a.s.length))
+    let fr=k[0],fe=fr,we=0;if(has(x)){let fx=k[1];we=fx>fr?1:0;if(we)fe=fx;else fr=fx}
+    if(has(x))for(let i=0;i<fr;i++)y.s[i]===x.s[i]||lenErr()
+    const fs=y.s.slice(0,fr),es=has(x)?yx[we].s.slice(fr,fe):[],cs=yx.map((a,i)=>a.s.slice(k[i])),c=cs.map(s=>prd(s))
+    const el=prd(es);let r=Array(prd(fs)*el)
+    const cell=(w,i)=>A(yx[w].a.slice(i,i+c[w]),cs[w])
+    for(let i=0,j=0,si=0;j<r.length;si++){
+      let f1=f;if(has(x)){let cc=cell(1-we,si*c[1-we]);f1=we?(a=>f(cc,a)):(a=>f(a,cc))}
+      for(let je=j+el;j<je;i+=c[we],j++)r[j]=f1(cell(we,i))
+    }
+    console.log(r)
+    return mix(A(r,fs.concat(es)))
   }
 }
 voc['⎉']=conj(rank)
