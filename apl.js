@@ -216,21 +216,10 @@ const ltr='_A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶ-ͷͺ-ͽΆΈ-ΊΌΎ-
   return[body(),dmnd('$')][0]
 }
 const voc={}
+,retNum=r=>{typeof r==='number'&&r!==r&&domErr();return r}
 ,perv=(f1,f2)=>{ // pervasive f1:monad, f2:dyad
-  let g1=!f1?nyiErr:x=>{
-    if(x.isA){let r=Array(x.a.length);for(let i=0;i<x.a.length;i++)r[i]=g1(x.a[i]);return A(r,x.s)}
-    let r=f1(x);typeof r==='number'&&r!==r&&domErr();return r
-  }
-  let g2=!f2?nyiErr:(x,y)=>{switch((!x.isA?10:x.a.length===1?20:30)+(!y.isA?1:y.a.length===1?2:3)){
-    case 11:{let r=f2(x,y);typeof r==='number'&&r!==r&&domErr();return r}
-    case 12:case 13:{const n=y.a.length,r=Array(n);for(let i=0;i<n;i++)r[i]=g2(x,y.a[i]);return A(r,y.s)}
-    case 21:case 31:{const n=x.a.length,r=Array(n);for(let i=0;i<n;i++)r[i]=g2(x.a[i],y);return A(r,x.s)}
-    case 22:return A([g2(x.a[0],y.a[0])],x.s.length>y.s.length?x.s:y.s)
-    case 23:{const xi=x.a[0],n=y.a.length,r=Array(n);for(let i=0;i<n;i++)r[i]=g2(xi,y.a[i]);return A(r,y.s)}
-    case 32:{const yi=y.a[0],n=x.a.length,r=Array(n);for(let i=0;i<n;i++)r[i]=g2(x.a[i],yi);return A(r,x.s)}
-    case 33:{x.s.length!==y.s.length&&rnkErr();x.s!=''+y.s&&lenErr()
-             const n=x.a.length,r=Array(n);for(let i=0;i<n;i++)r[i]=g2(x.a[i],y.a[i]);return A(r,x.s)}
-  }}
+  let g1=!f1?nyiErr:y=>y.isA?each(f1)(y):retNum(f1(y))
+  let g2=!f2?nyiErr:(y,x)=>y.isA||x.isA?each(f2)(y,x):retNum(f2(y,x))
   return(y,x)=>has(x)?g2(x,y):g1(y)
 }
 ,real=f=>(x,y,h)=>typeof x!=='number'||y!=null&&typeof y!=='number'?domErr():f(x,y,h)
@@ -421,7 +410,7 @@ voc['⌜']=adv(f=>{
     }
   }
 })
-voc['¨']=adv(fn=>{
+const each=fn=>{
   fn=toF(fn)
   return(y,x)=>{
     y=toA(y)
@@ -438,7 +427,7 @@ voc['¨']=adv(fn=>{
       return A(r,ae.s)
     }
   }
-})
+}
 const rank=(getK,f)=>{
   f=toF(f);getK=toF(getK)
   const efr=(k,r)=>{k=toInt(k);return k<0?Math.min(-k,r):Math.max(r-k,0)} // effective frame
@@ -458,6 +447,7 @@ const rank=(getK,f)=>{
     return mix(A(r,fs.concat(es)))
   }
 }
+voc['¨']=adv(each)
 voc['⎉']=conj(rank)
 voc['˘']=adv(f=>rank(-1,f))
 voc['⊤']=(y,x)=>{
