@@ -378,16 +378,10 @@ voc['∾']=(y,x)=>{
 voc['⊢']=(y,x)=>y
 voc['⊣']=(y,x)=>has(x)?x:y
 voc['˜']=adv(f=>(y,x)=>toF(f)(has(x)?x:y,y))
-voc['∘']=conj((g,f)=>{return(y,x)=>f(toF(g)(y,x))})
-voc['○']=conj((g,f)=>{return(y,x)=>f(g(y),has(x)?g(x):undefined)})
-voc['⊸']=conj((g,f)=>{
-  if(typeof f==='function'){return(y,x)=>g(y,has(x)?f(x):undefined)}
-  else{return(y,x)=>g(y,f)}
-})
-voc['⟜']=conj((g,f)=>{
-  if(typeof g==='function'){return(y,x)=>f(g(y),x)}
-  else{return(y,x)=>f(g,x||y)}
-})
+voc['∘']=conj((g,f)=>(y,x)=>f(toF(g)(y,x)))
+voc['○']=conj((g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined))
+voc['⊸']=conj((g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y)))
+voc['⟜']=conj((g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y))
 // voc['∪']=(y,x)=>{
 //   asrt(!x)
 //   if(y.s.length>1)rnkErr()
