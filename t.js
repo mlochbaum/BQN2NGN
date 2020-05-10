@@ -16,7 +16,7 @@ const S=JSON.stringify
   }
 }
 if(typeof require!=='undefined'&&typeof module!=='undefined'&&module===require.main){
-  const t=collectTests(require('fs').readFileSync(__dirname+'/t.apl','utf8'))
+  const t=collectTests(require('fs').readFileSync(__dirname+'/t.bqn','utf8'))
   const apl=require('./apl'),so=process.stdout,t0=Date.now()
   let ne=0,nf=0,ts=0 //ne/nf:number of executed/failed tests, ts:last test timestamp
   for(let i=0;i<t.length;i++){
