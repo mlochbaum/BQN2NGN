@@ -27,7 +27,6 @@ _atop←{⍶⍹⍵;⍶⍺⍹⍵}
 ,strides=s=>{let r=Array(s.length),u=1;for(let i=r.length-1;i>=0;i--){asrt(isInt(s[i],0));r[i]=u;u*=s[i]};return r}
 ,toInt=(x,m,M)=>{let r=unw(x);if(r!==r|0||m!=null&&r<m||M!=null&&M<=r)domErr();return r}
 ,str=x=>{x.s.length>1&&rnkErr();for(let i=0;i<x.a.length;i++)typeof x.a[i]!=='string'&&domErr();return x.a.join('')}
-,isSimple=x=>!x.s.length&&!x.a[0].isA
 ,unw=x=>{if(!x.isA)return x;x.a.length===1||lenErr();return x.a[0]} // unwrap
 ,getProt=x=>!x.a.length||typeof x.a[0]!=='string'?0:' ' // todo
 ,asrt=x=>{if(typeof x==='function'){if(!x())throw Error('assertion failed: '+x)}
@@ -132,8 +131,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
 ,toFn=f=>(x,y)=>vm(f.b,f.h.concat([[x,f,y,null]]),f.p)
 ,vm=(b,h,p=0,t=[])=>{while(1)switch(b[p++]){default:asrt(0) // b:bytecode,h:environment,p:program counter,t:stack
   case LDC:t.push(b[p++]);break
-  case VEC:{let a=t.splice(t.length-b[p++]);for(let i=0;i<a.length;i++)if(isSimple(a[i]))a[i]=unw(a[i])
-            t.push(A(a));break}
+  case VEC:{t.push(A(t.splice(t.length-b[p++])));break}
   case GET:{let r=h[b[p++]][b[p++]];r!=null||valErr();t.push(r);break}
   case SET:{h[b[p++]][b[p++]]=t[t.length-1];break}
   case MON:{let[x,f]=t.splice(-2)
