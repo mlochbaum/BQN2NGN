@@ -255,6 +255,7 @@ const voc={}
 ,conj=f=>{f.conj=1;return f}
 ,cps =f=>{f.cps =1;return f}
 
+voc['π']=Math.PI
 voc['+']=withId(0,perv(
   numeric(x=>x,Z.cjg),
   numeric((x,y)=>x+y,Z.add)

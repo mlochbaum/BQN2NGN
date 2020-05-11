@@ -11,12 +11,12 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 ⍋grade up_⍒grade down_∊flatten;member of_⍷find_∪unique_⊥decode_⊤encode_⍎execute_⍕format
 ¨each_˘cells_⁼inverse_⌜table_´reduce_⚇depth_⎉rank_⍟power operator_˜self;swap_∘atop_○over_⌾under_⊸before_⟜after
 •system;stdin/stdout_⍠combine monadic-dyadic fns_⍁identity element operator
-¯negative_∞infinity_⍬empty numeric vector_⟨start list_⟩end list_‿strand_⦃start set_⦄end set
+¯negative_∞infinity_πpi_⍬empty numeric vector_⟨start list_⟩end list_‿strand_⦃start set_⦄end set
 ⋄statement separator_⍝comment_⍺left argument_⍵right argument_⍶left operand_⍹right operand_∇recursion
 →"return" reified as a function_↗throw`.split(/[\n_]/)
 ,bqk='`1234567890-=~!@#$%^&*()_+qwertyuiop[]QWERTYUIOP{}asdfghjkl;\'\\ASDFGHJKL:"|zxcvbnm,./ZXCVBNM<>?'
-,bqv='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽w∊⊏⊐↑↓↕⊣⊢←→QW⍷⊑⊒⍋⍒IOP⦃⦄⍉⌈⌊fg⊸∘○⟜⋄⍝⌾  ASDFGHJKL:"|⥊x⊂⊃⊥⊤≡∾≍‿ZX⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
-//  ='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒IOP⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
+,bqv='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽w∊⊏⊐↑↓↕⊣⊢←→QW⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊fg⊸∘○⟜⋄⍝⌾  ASDFGHJKL:"|⥊x⊂⊃⊥⊤≡∾≍‿ZX⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
+//  ='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
 ,tc={},bqc={} //tab completions and ` completions
 for(let i=0;i<bqk.length;i++)bqc[bqk[i]]=String.fromCodePoint(bqv.codePointAt(i))
 for(let i=0;i<tcs.length;i+=3)tc[tcs[i]+tcs[i+1]]=tcs[i+2]
