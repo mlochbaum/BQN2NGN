@@ -217,9 +217,9 @@ const ltr='_A-Za-zªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶ-ͷͺ-ͽΆΈ-ΊΌΎ-
 }
 const voc={}
 ,retNum=r=>{typeof r==='number'&&r!==r&&domErr();return r}
-,perv=(f1,f2)=>{ // pervasive f1:monad, f2:dyad
-  let g1=!f1?nyiErr:y=>y.isA?each(f1)(y):retNum(f1(y))
-  let g2=!f2?nyiErr:(y,x)=>y.isA||x.isA?each(f2)(y,x):retNum(f2(y,x))
+,perv=(f1,f2)=>{ // pervasive f1:monad, f2:dyad (arguments reversed!)
+  let g1=!f1?nyiErr:y=>y.isA?each(g1)(y):retNum(f1(y))
+  let g2=!f2?nyiErr:(y,x)=>y.isA||x.isA?each(g2)(y,x):retNum(f2(y,x))
   return(y,x)=>has(x)?g2(x,y):g1(y)
 }
 ,real=f=>(x,y,h)=>typeof x!=='number'||y!=null&&typeof y!=='number'?domErr():f(x,y,h)
