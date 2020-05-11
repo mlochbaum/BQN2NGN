@@ -1,6 +1,6 @@
 //usr/bin/env node "$0" $@;exit $?
 'use strict'
-// ⊒\ ⁼ ⚇⌾
+// ⊒\ ⚇⌾
 const prelude=`
 ⍬←() ⋄ •d←'0123456789' ⋄ •a←'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 _atop←{⍶⍹⍵;⍶⍺⍹⍵}
@@ -830,6 +830,25 @@ voc['⍉']=(y,x)=>{
   return A(r,s)
 }
 voc['⍠']=conj((f,g)=>(y,x)=>(has(x)?f:g)(y,x))
+
+voc['⁼']=adv(f=>f.inverse||domErr())
+voc['+'].inverse=voc['⍠'](voc['+'],voc['˜'](voc['-']))
+voc['-'].inverse=voc['-']
+voc['×'].inverse=withId(1,perv(
+  numeric(x=>(x>0)-(x<0),x=>{let d=Math.sqrt(x.re*x.re+x.im*x.im);return smplfy(x.re/d,x.im/d)}),
+  numeric((x,y)=>x*y,Z.mul)
+))
+voc['÷'].inverse=voc['÷']
+voc['⋆'].inverse=perv(
+  Z.log,
+  (x,y)=>typeof x==='number'&&typeof y==='number'&&x>0&&y>0?Math.log(y)/Math.log(x):Z.div(Z.log(y),Z.log(x))
+)
+voc['√'].inverse=withId(1,perv(
+  numeric(x=>x*x,x=>Z.mul(x,x)),
+  (w,x)=>Z.pow(w,x)
+))
+voc['⊢'].inverse=(y,x)=>y
+voc['⊣'].inverse=(y,x)=>has(x)?domErr():y
 
 const NOUN=1,VRB=2,ADV=3,CNJ=4
 ,exec=(s,o={})=>{
