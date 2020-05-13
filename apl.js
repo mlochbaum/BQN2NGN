@@ -12,6 +12,7 @@ _atop←{⍶⍹⍵;⍶⍺⍹⍵}
 ∊←⊐˜≠≠∘⊢
 ∧←⍋⊸⊏⍠∧⍁1
 ∨←⍒⊸⊏⍠∨⍁0
+∪←0⊸↑(⊣∾¬∘∊˜/≍∘⊢)˜´⌽
 `
 
 ,A=(a,s=[a.length])=>{
@@ -372,12 +373,6 @@ voc['∘']=conj((g,f)=>(y,x)=>f(toF(g)(y,x)))
 voc['○']=conj((g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined))
 voc['⊸']=conj((g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y)))
 voc['⟜']=conj((g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y))
-// voc['∪']=(y,x)=>{
-//   asrt(!x)
-//   if(y.s.length>1)rnkErr()
-//   let r=[],n=y.a.length;for(let i=0;i<n;i++)contains(r,y.a[i])||r.push(y.a[i]);return A(r)
-// }
-// const contains=(a,x)=>{for(let i=0;i<a.length;i++)if(match(x,a[i]))return 1}
 voc['⊥']=(y,x)=>{
   asrt(x)
   if(!x.s.length)x=A([unw(x)])
