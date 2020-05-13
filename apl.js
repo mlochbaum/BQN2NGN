@@ -10,6 +10,8 @@ _atop←{⍶⍹⍵;⍶⍺⍹⍵}
 ↑←((↕1+≠)↑¨<)⍠↑
 ↓←((↕1+≠)↓¨<)⍠↓
 ∊←⊐˜≠≠∘⊢
+∧←⍋⊸⊏⍠∧⍁1
+∨←⍒⊸⊏⍠∨⍁0
 `
 
 ,A=(a,s=[a.length])=>{
@@ -292,8 +294,8 @@ voc['⌈']=withId(-Infinity,perv(
   Z.ceil,
   real((x,y)=>Math.max(x,y))
 ))
-voc['∨']=withId(0,perv(null,(x,y)=>Z.isint(x)&&Z.isint(y)?Z.gcd(x,y):domErr()))
-voc['∧']=withId(1,perv(null,(x,y)=>Z.isint(x)&&Z.isint(y)?Z.lcm(x,y):domErr()))
+voc['∨']=perv(null,(x,y)=>Z.isint(x)&&Z.isint(y)?Z.gcd(x,y):domErr())
+voc['∧']=perv(null,(x,y)=>Z.isint(x)&&Z.isint(y)?Z.lcm(x,y):domErr())
 const eq=(x,y)=>+(x instanceof Z&&y instanceof Z?x.re===y.re&&x.im===y.im:x===y)
 voc['=']=withId(1,perv(null,eq))
 voc['≠']=withId(0,(y,x)=>has(x)?perv(null,(x,y)=>1-eq(y,x))(y,x):(y.isA&&y.s.length?y.s[0]:1))
