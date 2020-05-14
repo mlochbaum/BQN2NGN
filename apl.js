@@ -564,6 +564,7 @@ const fmt=x=>{ // as array of strings
     }
     const nk=r.h+r.bm;for(let k=0;k<nk;k++){let s='';for(let j=0;j<nc;j++)s+=g[i][j][k];a.push('  '+s+'  ')}
   }
+  if(a.length===1)return ['['+a[0].slice(1,-1)+']']
   const ws=' '.repeat(a[0].length-1);a.unshift('┌'+ws);a.push(ws+'┘')
   return a
 }
