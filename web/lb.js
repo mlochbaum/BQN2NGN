@@ -12,20 +12,19 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 ¨each_˘cells_⁼inverse_⌜table_´reduce_⚇depth_⎉rank_⍟power operator_˜self;swap_∘atop_○over_⌾under_⊸before_⟜after
 •system;stdin/stdout_⍠combine monadic-dyadic fns_⍁identity element operator
 ¯negative_∞infinity_πpi_⍬empty numeric vector_⟨start list_⟩end list_‿strand_⦃start set_⦄end set
-⋄statement separator_⍝comment_⍺left argument_⍵right argument_⍶left operand_⍹right operand_∇recursion
+⋄statement separator_⍝comment_𝕨left argument_𝕩right argument_𝔽left operand_𝔾right operand_∇recursion
 →"return" reified as a function_↗throw`.split(/[\n_]/)
-,bqk='`1234567890-=~!@#$%^&*()_+qwertyuiop[]QWERTYUIOP{}asdfghjkl;\'\\ASDFGHJKL:"|zxcvbnm,./ZXCVBNM<>?'
-,bqv='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽w∊⊏⊐↑↓↕⊣⊢←→QW⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊fg⊸∘○⟜⋄⍝⌾  ASDFGHJKL:"|⥊x⊂⊃⊥⊤≡∾≍‿ZX⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
-//  ='˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,'')
+,bqk=           '`1234567890-=~!@#$%^&*()_+qwertyuiop[]QWERTYUIOP{}asdfghjkl;\'\\ASDFGHJKL:"|zxcvbnm,./ZXCVBNM<>?'
+,bqv=Array.from('˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,''))
 ,tc={},bqc={} //tab completions and ` completions
-for(let i=0;i<bqk.length;i++)bqc[bqk[i]]=String.fromCodePoint(bqv.codePointAt(i))
+for(let i=0;i<bqk.length;i++)bqc[bqk[i]]=bqv[i]
 for(let i=0;i<tcs.length;i+=3)tc[tcs[i]+tcs[i+1]]=tcs[i+2]
 for(let i=0;i<tcs.length;i+=3){let k=tcs[i+1]+tcs[i];tc[k]=tc[k]||tcs[i+2]}
 let lbh='';for(let i=0;i<lbs.length;i++){
-  let ks=[]
-  for(let j=0;j<tcs.length;j+=3)if(lbs[i][0]===tcs[j+2])ks.push('\n'+tcs[j]+' '+tcs[j+1]+' <tab>')
-  for(let j=0;j<bqk.length;j++)if(lbs[i][0]===bqv[j])ks.push('\n` '+bqk[j])
-  lbh+='<b title="'+he(lbs[i].slice(1).replace(';','\n'))+(ks.length?'\n'+ks.join(''):'')+'">'+lbs[i][0]+'</b>'
+  const l=lbs[i],c=Array.from(l)[0];let ks=[]
+  for(let j=0;j<tcs.length;j+=3)if(c===tcs[j+2])ks.push('\n'+tcs[j]+' '+tcs[j+1]+' <tab>')
+  for(let j=0;j<bqk.length;j++)if(c===bqv[j])ks.push('\n` '+bqk[j])
+  lbh+='<b title="'+he(l.slice(c.length).replace(';','\n'))+(ks.length?'\n'+ks.join(''):'')+'">'+c+'</b>'
 }
 let d=document,el=d.createElement('div');el.innerHTML=
 `<div class=ngn_lb><span class=ngn_x title="Hide language bar">❎</span>${lbh}</div>
@@ -54,7 +53,7 @@ ev(lb,'mousedown',x=>{
 let fk=x=>{
   let t=x.target
   if(bqm){let i=t.selectionStart,v=t.value,c=bqc[x.key];if(x.which>31){bqm=0;d.body.classList.remove('ngn_bq')}
-          if(c){t.value=v.slice(0,i)+c+v.slice(i);t.selectionStart=t.selectionEnd=i+1;pd(x);return!1}}
+          if(c){t.value=v.slice(0,i)+c+v.slice(i);t.selectionStart=t.selectionEnd=i+c.length;pd(x);return!1}}
   switch(x.ctrlKey+2*x.shiftKey+4*x.altKey+8*x.metaKey+100*x.which){
     case 19200:bqm=1;d.body.classList.add('ngn_bq');pd(x);break //`
     case   900:{let i=t.selectionStart,v=t.value,c=tc[v.slice(i-2,i)] //tab
