@@ -163,11 +163,12 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
             asrt(b[cont.p]===RET);t.push(r=>{b=cont.b;h=cont.h;t=cont.t;p=cont.p;t.push(r)});break}
 }}
 const ltr='_A-Za-z'
-,td=[['-',/^ +|^[⍝#].*/],           // whitespace or comment
+,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|¯|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|¯|∞))?/i], // number
-     ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/],         // string
-     ['.',/^[\(\)\[\]\{\}:;←⋄\n]/], // punctuation
-     ['J',/^«[^»]*»/],              // JS literal
+     ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
+     ['.',/^[\(\)\[\]\{\}⟨⟩‿:;←]/],       // punctuation
+     ['⋄',/^[⋄\n,]/],                     // separator
+     ['J',/^«[^»]*»/],                    // JS literal
      ['X',RegExp('^(?:•?['+ltr+']['+ltr+'0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])','i')]] // identifier
 ,prs=(s,o)=>{
   // tokens are {t:type,v:value,o:offset,s:aplCode}
@@ -177,7 +178,7 @@ const ltr='_A-Za-z'
     let m,t,v,r=s.slice(i) // m:match object, t:type, v:value, r:remaining source code
     for(let j=0;j<td.length;j++)if(m=r.match(td[j][1])){v=m[0];t=td[j][0];t==='.'&&(t=v);break}
     t||synErr({file:o?o.file:null,o:i,s:s})
-    '([{'.includes(t)?stk.push(t):')]}'.includes(t)?stk.pop():0
+    '([{⟨'.includes(t)?stk.push(t):')]}⟩'.includes(t)?stk.pop():0
     if(t!=='-'&&(t!=='\n'||stk[stk.length-1]==='{'))a.push({t:t,v:v[0]==='•'?v.toUpperCase():v,o:i,s:s})
     i+=v.length
   }
@@ -190,29 +191,36 @@ const ltr='_A-Za-z'
   ,body=_=>{
     let r=['B']
     while(1){
-      while('⋄\n'.includes(a[i].t))i++
+      while(a[i].t==='⋄')i++
       if('$};'.includes(a[i].t))return r
       let e=expr();if(a[i].t===':'){i++;e=[':',e,expr()]}
       r.push(e)
     }
   }
-  ,expr=_=>{
-    let r=['.'],x
+  ,expr=instrand=>{
+    let r=['.']
     while(1){
-      if('NSXJ'.includes(a[i].t)){x=[a[i].t,a[i].v];i++}
-      else if(a[i].t==='('){i++;if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
-      else if(a[i].t==='{'){i++;x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
-      else{prsErr()}
-      if(a[i].t==='['){
-        i++;x=['[',x]
-        while(1){if(a[i].t===';'){i++;x.push(null)}
-                 else if(a[i].t===']'){x.push(null);break}
-                 else{x.push(expr());if(a[i].t===']'){break}else{dmnd(';')}}}
-        dmnd(']')
-      }
+      let x=obj()
+      if(a[i].t==='‿'){x=['V',x];do{i++;x.push(obj())}while(a[i].t==='‿')}
       if(a[i].t==='←'){i++;return r.concat([['←',x,expr()]])}
-      r.push(x);if(')]}:;⋄\n$'.includes(a[i].t))return r
+      r.push(x);if(')]}⟩‿:;⋄\n$'.includes(a[i].t))return r
     }
+  }
+  ,obj=_=>{
+    let x
+    if('NSXJ'.includes(a[i].t)){x=[a[i].t,a[i].v];i++}
+    else if(a[i].t==='('){i++;if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
+    else if(a[i].t==='{'){i++;x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
+    else if(a[i].t==='⟨'){i++;x=['V',expr()];while(a[i].t==='⋄'){i++;x.push(expr())}dmnd('⟩')}
+    else{prsErr()}
+    if(a[i].t==='['){
+      i++;x=['[',x]
+      while(1){if(a[i].t===';'){i++;x.push(null)}
+               else if(a[i].t===']'){x.push(null);break}
+               else{x.push(expr());if(a[i].t===']'){break}else{dmnd(';')}}}
+      dmnd(']')
+    }
+    return x
   }
   return[body(),dmnd('$')][0]
 }
@@ -876,7 +884,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     case'B':case':':case'←':case'[':case'{':case'.':case'⍬':
       let r=VRB;for(let i=1;i<x.length;i++)if(x[i])r=Math.max(r,gl(x[i]))
       if(x[0]==='{'){x.g=r;return VRB}else{return r}
-    case'S':case'N':case'J':return 0
+    case'S':case'N':case'J':case'V':return 0
     case'X':{const s=x[1];return s==='𝕗'||s==='𝔽'||s==='∇∇'?ADV:s==='𝕘'||s==='𝔾'?CNJ:VRB}
   }}
   gl(ast)
@@ -904,22 +912,12 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
           return x.g||VRB
         }
         case'S':case'N':case'J':case'⍬':return NOUN
+        case'V':{for(let i=1;i<x.length;i++)if(vst(x[i])!==NOUN)synErrAt(x);return NOUN}
         case'[':{for(let i=2;i<x.length;i++)if(x[i]&&vst(x[i])!==NOUN)synErrAt(x);return vst(x[1])}
         case'.':{
           let a=x.slice(1),h=Array(a.length);for(let i=a.length-1;i>=0;i--)h[i]=vst(a[i])
-          // strands
-          let i=0
-          while(i<a.length-1){
-            if(h[i]===NOUN&&h[i+1]===NOUN){
-              let j=i+2;while(j<a.length&&h[j]===NOUN)j++
-              a.splice(i,j-i,['V'].concat(a.slice(i,j)))
-              h.splice(i,j-i,NOUN)
-            }else{
-              i++
-            }
-          }
           // adverbs and conjunctions
-          i=0
+          let i=0
           while(i<a.length){
             if(h[i]===VRB&&i+1<a.length&&h[i+1]===ADV){
               a.splice(i,2,['A'].concat(a.slice(i,i+2)));h.splice(i,2,VRB)
