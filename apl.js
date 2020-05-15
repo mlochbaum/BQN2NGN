@@ -164,7 +164,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
 }}
 const ltr='_A-Za-z'
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
-     ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|¯|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|¯|∞))?/i], // number
+     ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
      ['.',/^[\(\)\[\]\{\}⟨⟩‿:;←]/],       // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
@@ -967,7 +967,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              else{synErrAt(x)}
              return x.g===VRB?f:[LAM,f.length+1].concat(f,RET)}
     case'S':{const o=x[1].slice(0,1),s=x[1].slice(1,-1).replace(o+o,o);if(o==="'"){s.length===1||synErrAt(x);return[LDC,s]}else return[LDC,A(s.split(''))]}
-    case'N':{const a=x[1].replace(/[¯∞]/g,'-').split(/j/i).map(x=>x==='-'?Infinity:x==='--'?-Infinity:parseFloat(x))
+    case'N':{const a=x[1].replace(/¯/g,'-').split(/j/i).map(x=>x==='∞'?Infinity:x==='-∞'?-Infinity:parseFloat(x))
              return[LDC,a[1]?new Z(a[0],a[1]):a[0]]}
     case'J':{const f=Function('return(_w,_a)=>('+x[1].replace(/^«|»$/g,'')+')')();return[EMB,(_w,_a)=>aplify(f(_w,_a))]}
     case'V':{const frags=[];let allConst=1
