@@ -623,8 +623,9 @@ voc['⊐']=(y,x)=>{
   return A(r,y.s)
 }
 voc['⍟']=conj((g,f)=>(y,x)=>{
-  asrt(typeof f==='function')
-  const n=toInt(toF(g)(y,x),0)
+  typeof f==='function'||domErr()
+  let n=toInt(toF(g)(y,x))
+  if(n<0){f=voc['⁼'](f);n=-n}
   for(let i=0;i<n;i++)y=f(y,x);return y
 })
 voc['get_•']=cps((_,_1,_2,cb)=>{
