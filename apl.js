@@ -635,8 +635,6 @@ voc['set_•']=x=>{
   if(typeof window!=='undefined'&&typeof window.alert==='function'){window.alert(s)}else{process.stdout.write(s)}
   return x
 }
-voc['get_•io']=_=>A.zero
-voc['set_•io']=x=>match(x,A.zero)?x:domErr()
 voc['•dl']=cps((y,x,_,cb)=>{let t0=+new Date;setTimeout(_=>{cb(A([new Date-t0]))},unw(y))})
 voc['•re']=(y,x)=>{
   x=str(x),y=str(y)
@@ -986,7 +984,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     case':':{const r=rndr(x[1]),y=rndr(x[2]);return r.concat(JEQ,y.length+2,POP,y,RET)}
     case'←':return rndr(x[2]).concat(rndrLHS(x[1]))
     case'X':{const s=x[1],vars=x.scp.v,v=vars['get_'+s]
-             return s==='→'?[CON]:v?[LDC,A.zero,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
+             return s==='→'?[CON]:v?[LDC,0,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
              if(x.length===2){f=lx}
              else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y),v=x.scp.v['⍠']

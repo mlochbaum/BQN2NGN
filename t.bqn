@@ -457,8 +457,6 @@ F←{𝕨+2×𝕩}⋄G←F⍁789⋄F´⍬ !! DOMAIN ERROR
 'a'(∾⍟3)'b' ←→ "aaab"
 1{𝕨+÷𝕩}⍟=1 ←→ 1.618033988749895
 c←0⋄5⍟{c←c+1}0⋄c ←→ 5
-•io ←→ 0
-•io←0 ←→ 0
 "b(c+)d"•RE"abcd" ←→ 1‿"bcd"‿"c"
 "B(c+)d"•RE"abcd" ←→ ⍬
 "a(b"•RE"c" !! DOMAIN ERROR
