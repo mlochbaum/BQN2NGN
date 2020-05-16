@@ -872,7 +872,7 @@ voc['⍉']=(y,x,inv)=>{
 voc['⍠']=conj((f,g)=>(y,x)=>(has(x)?f:g)(y,x))
 
 voc['⁼']=adv(f=>f.inverse||domErr())
-voc['+'].inverse=voc['⍠'](voc['+'],voc['˜'](voc['-']))
+voc['+'].inverse=voc['⍠'](voc['˜'](voc['-']),voc['+'])
 voc['-'].inverse=voc['-']
 voc['×'].inverse=withId(1,perv(
   numeric(x=>(x>0)-(x<0),x=>{let d=Math.sqrt(x.re*x.re+x.im*x.im);return smplfy(x.re/d,x.im/d)}),
