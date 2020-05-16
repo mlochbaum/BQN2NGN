@@ -647,11 +647,9 @@ voc['•RE']=(y,x)=>{
   return A(r)
 }
 voc['•UCS']=(y,x)=>{
-  x&&nyiErr();let r=Array(y.a.length)
-  for(let i=0;i<y.a.length;i++){
-    let u=y.a[i];r[i]=isInt(u,0,0x10000)?String.fromCharCode(u):typeof u==='string'?u.charCodeAt(0):domErr()
-  }
-  return A(r,y.s)
+  x&&nyiErr()
+  const f=u=>u.isA?each(f)(u):isInt(u,0,0x10000)?String.fromCharCode(u):typeof u==='string'?u.charCodeAt(0):domErr()
+  return f(y)
 }
 voc['get_•OFF']=_=>{typeof process==='undefined'&&nyiErr();process.exit(0)}
 voc['?']=(y,x)=>has(x)?deal(y,x):roll(y)
