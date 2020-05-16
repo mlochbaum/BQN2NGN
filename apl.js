@@ -195,22 +195,22 @@ const ltr='_A-Za-z'
       r.push(e)
     }
   }
-  ,expr=instrand=>{
+  ,expr=_=>{
     let r=['.']
     while(1){
       let x=obj()
       if(a[i].t==='‿'){x=['V',x];do{i++;x.push(obj())}while(a[i].t==='‿')}
       if(a[i].t==='←'){i++;return r.concat([['←',x,expr()]])}
-      r.push(x);if(')]}⟩‿:;⋄\n$'.includes(a[i].t))return r
+      r.push(x);if(')]}⟩:;⋄$'.includes(a[i].t))return r
     }
   }
   ,obj=_=>{
-    let x
-    if('NSXJ'.includes(a[i].t)){x=[a[i].t,a[i].v];i++}
-    else if(a[i].t==='('){i++;if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
-    else if(a[i].t==='{'){i++;x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
-    else if(a[i].t==='⟨'){i++;x=['V',expr()];while(a[i].t==='⋄'){i++;x.push(expr())}dmnd('⟩')}
-    else{prsErr()}
+    let x,n=a[i++]
+    if('NSXJ'.includes(n.t))x=[n.t,n.v]
+    else if(n.t==='('){if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
+    else if(n.t==='{'){x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
+    else if(n.t==='⟨'){x=['V',expr()];while(a[i].t==='⋄'){i++;x.push(expr())}dmnd('⟩')}
+    else{i--;prsErr()}
     if(a[i].t==='['){
       i++;x=['[',x]
       while(1){if(a[i].t===';'){i++;x.push(null)}
