@@ -153,10 +153,8 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
   case LAM:{let size=b[p++];t.push(new Proc(b,p,size,h));p+=size;break}
   case RET:{if(t.length===1)return t[0];[b,p,h]=t.splice(-4,3);break}
   case POP:{t.pop();break}
-  case SPL:{let n=b[p++],a=t[t.length-1].a.slice().reverse(),a1=Array(a.length)
-            for(let i=0;i<a.length;i++)a1[i]=a[i]
-            if(a1.length===1){a1=rpt(a1,n)}else if(a1.length!==n){lenErr()}
-            t.push.apply(t,a1);break}
+  case SPL:{const n=b[p++],v=t[t.length-1];v.isA||domErr();v.a.length===n||lenErr()
+            t.push.apply(t,v.a.slice().reverse());break}
   case JEQ:{const n=b[p++];toInt(t[t.length-1],0,2)||(p+=n);break}
   case EMB:{let frm=h[h.length-1];t.push(b[p++](frm[0],frm[2]));break}
   case CON:{let frm=h[h.length-1],cont={b,h:h.map(x=>x.slice()),t:t.slice(0,frm[3]),p:frm[1].p+frm[1].size-1}
