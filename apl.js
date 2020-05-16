@@ -838,20 +838,31 @@ voc['↑']=(y,x)=>{
   }
   return A(r,s)
 }
-voc['⍉']=(y,x)=>{
-  let a,s=[],d=[],d0=strides(y.s),yr=y.s.length
-  if(has(x)){a=getVec(x);a.length===yr||rnkErr();for(let i=0;i<yr;i++)isInt(a[i],0,yr)||domErr()}
-  else{a=new Int32Array(yr);a[0]=yr-1;for(let i=1;i<yr;i++)a[i]=i-1;}
-  for(let i=0;i<yr;i++){
-    let x=a[i]
-    if(s[x]==null){s[x]=y.s[i];d[x]=d0[i]}
-    else{s[x]=Math.min(s[x],y.s[i]);d[x]+=d0[i]}
+const rotAxes=(y,l,m)=>{
+  const sh=[y.s.slice(0,l),y.s.slice(l,m),y.s.slice(m)]
+  const a=prd(sh[0]),b=prd(sh[1]),c=prd(sh[2])
+  let r=Array(y.a.length)
+  for(let i=0;i<a*c;i+=c)for(let j=0;j<b*c;j+=c)for(let k=0;k<c;k++)r[i+j*a+k]=y.a[i*b+j+k]
+  return A(r,sh[1].concat(sh[0],sh[2]))
+}
+voc['⍉']=(y,x,inv)=>{
+  y=toA(y);const yr=y.s.length;if(yr===0){has(x)&&getVec(x).length&&rnkErr();return y}
+  if(!has(x))return rotAxes(y,inv?yr-1:1,yr)
+  if(!x.isA){isInt(x,0)||domErr();x<yr||rnkErr();return x?rotAxes(y,1,x+1):y}
+  let a=getVec(x),t=[],diag=[];a.length<=yr||rnkErr()
+  let k=0;for(;k<a.length;k++){
+    let x=a[k];isInt(x,0)||domErr();x<yr||rnkErr()
+    if(t[x]==null){t[x]=k}else{inv&&domErr();diag.push(k)}
   }
-  for(let i=0;i<s.length;i++)s[i]!=null||rnkErr()
-  let n=prd(s),r=Array(n),j=new Int32Array(s.length),p=0,l=s.length-1
+  let l=0;while(1){while(t[l]!=null)l++;if(k>=yr)break;t[l++]=k++}
+  l===t.length||rnkErr()
+  if(inv){const t0=t.slice();for(let i=0;i<t.length;i++)t[t0[i]]=i}
+  let s=t.map(i=>y.s[i]),d0=strides(y.s),d=t.map(i=>d0[i])
+  diag.forEach(k=>{x=a[k];s[x]=Math.min(s[x],y.s[k]);d[x]+=d0[k]})
+  let n=prd(s),r=Array(n),j=new Int32Array(s.length),p=0
   for(let i=0;i<n;i++){
     r[i]=y.a[p]
-    let u=l;while(u>=0&&j[u]+1===s[u]){p-=j[u]*d[u];j[u--]=0}
+    let u=l-1;while(u>=0&&j[u]+1===s[u]){p-=j[u]*d[u];j[u--]=0}
     if(u<0)break
     j[u]++;p+=d[u]
   }
@@ -877,6 +888,8 @@ voc['√'].inverse=withId(1,perv(
 ))
 voc['⊢'].inverse=(y,x)=>y
 voc['⊣'].inverse=(y,x)=>has(x)?domErr():y
+voc['⌽'].inverse=(y,x)=>voc['⌽'](y,has(x)?voc['-'](x):undefined)
+voc['⍉'].inverse=(y,x)=>voc['⍉'](y,x,1)
 
 const NOUN=1,VRB=2,ADV=3,CNJ=4
 ,exec=(s,o={})=>{
