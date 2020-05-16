@@ -4,7 +4,7 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 'uu∪nn∩/-⌿\\-⍀,-⍪rr⍴pp⍴o|⌽o-⊖o\\⍉..¨~:⍨*:⍣o.∘[\'⍞[]⎕[:⍠[=⌸ot⍎oT⍕<>⋄on⍝aa⍺ww⍵a-⍶w-⍹VV∇--¯88∞0~⍬V~⍫//↗[/⍁'
 ,lbs=`←assign_+conjugate;add_-negate;subtract_×signum;multiply_÷reciprocal;divide_⋆exp;power_√sqrt;root
 ∨or_∧and_¬not;span_⌈ceiling;max_⌊floor;min_|magnitude;residue_!factorial;binomial_?roll;deal
-=equals_≠count;not equals_≤lesser or equal to_<box;less than_>mix;greater than_≥greater or equal to
+=equals_≠count;not equals_≤lesser or equal to_<box;less than_>unbox;greater than_≥greater or equal to
 ≡depth;match_≢shape;not match_⊣left_⊢right_⥊deshape;reshape_∾join_≍itemize;laminate
 ↑prefixes;take_↓suffixes;drop_↕range;windows_⌽reverse;rotate_⍉transpose;reorder axes
 /indices;replicate_\\partition_⊏first cell;select_⊑first;pick_⊐index of_⊒progressive index of
