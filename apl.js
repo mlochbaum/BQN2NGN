@@ -945,7 +945,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       switch(x[0]){default:asrt(0)
         case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x)
                 if(scp.v[s]){scp.v[s].g!==rg&&synErrAt(x)}else{scp.v[s]={d:scp.d,i:scp.n++,g:rg}};break
-        case'.':
+        case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg);break
         case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg);break
         case'[':rg===NOUN||synErrAt(x);vstLHS(x[1],rg);for(let i=2;i<x.length;i++)x[i]&&vst(x[i]);break
       }
@@ -985,7 +985,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   }}
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v&&v.g===VRB?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
-    case'.':
+    case'.':return rndrLHS(x[1])
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
     case'[':{const h=[],a=[],v=x.scp.v._amend // index assignment
              for(let i=2;i<x.length;i++)if(x[i]){h.push(i-2);a.push.apply(a,rndr(x[i]))}
