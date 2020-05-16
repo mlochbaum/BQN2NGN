@@ -3,7 +3,6 @@
 // ⊒\ ⚇⌾
 const prelude=`
 ⍬←() ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-_atop←{𝔽𝔾𝕩;𝔽𝕨𝔾𝕩}
 ¬←(1+-)⍁1
 ⊏←⊣´⍠⊏
 ↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
@@ -141,14 +140,16 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
             if(typeof f==='function'){if(x instanceof Proc)x=toFn(x)
                                       if(f.cps){f(x,undefined,undefined,r=>{t.push(r);vm(b,h,p,t)});return}
                                       t.push(f(x))}
-            else{let bp=t.length;t.push(b,p,h);b=f.b;p=f.p;h=f.h.concat([[x,f,null,bp]])}
+            else if(f.b){let bp=t.length;t.push(b,p,h);b=f.b;p=f.p;h=f.h.concat([[x,f,null,bp]])}
+            else t.push(f)
             break}
   case DYA:{let[y,f,x]=t.splice(-3)
             if(typeof f==='function'){if(y instanceof Proc)y=toFn(y)
                                       if(x instanceof Proc)x=toFn(x)
                                       if(f.cps){f(y,x,undefined,r=>{t.push(r);vm(b,h,p,t)});return}
                                       t.push(f(y,x))}
-            else{let bp=t.length;t.push(b,p,h);b=f.b;p=f.p;h=f.h.concat([[y,f,x,bp]])}
+            else if(f.b){let bp=t.length;t.push(b,p,h);b=f.b;p=f.p;h=f.h.concat([[y,f,x,bp]])}
+            else t.push(f)
             break}
   case LAM:{let size=b[p++];t.push(new Proc(b,p,size,h));p+=size;break}
   case RET:{if(t.length===1)return t[0];[b,p,h]=t.splice(-4,3);break}
@@ -160,27 +161,32 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
   case CON:{let frm=h[h.length-1],cont={b,h:h.map(x=>x.slice()),t:t.slice(0,frm[3]),p:frm[1].p+frm[1].size-1}
             asrt(b[cont.p]===RET);t.push(r=>{b=cont.b;h=cont.h;t=cont.t;p=cont.p;t.push(r)});break}
 }}
-const ltr='_A-Za-z'
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
      ['.',/^[\(\)\[\]\{\}⟨⟩‿:;←]/],       // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
      ['J',/^«[^»]*»/],                    // JS literal
-     ['X',RegExp('^(?:•?['+ltr+']['+ltr+'0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])','i')]] // identifier
+     ['X',RegExp('^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])','i')]] // identifier
 ,prs=(s,o)=>{
   // tokens are {t:type,v:value,o:offset,s:aplCode}
   // "stk" tracks bracket nesting and causes '\n' tokens to be dropped when the latest unclosed bracket is '(' or '['
   let i=0,a=[],stk=['{'],l=s.length // i:offset in s, a:tokens
   while(i<l){
-    let m,t,v,r=s.slice(i) // m:match object, t:type, v:value, r:remaining source code
+    let m,t,v,c=0,o=i,r=s.slice(i)
     for(let j=0;j<td.length;j++)if(m=r.match(td[j][1])){v=m[0];t=td[j][0];t==='.'&&(t=v);break}
     t||synErr({file:o?o.file:null,o:i,s:s})
-    '([{⟨'.includes(t)?stk.push(t):')]}⟩'.includes(t)?stk.pop():0
-    if(t!=='-'&&(t!=='\n'||stk[stk.length-1]==='{'))a.push({t:t,v:v[0]==='•'?v.toUpperCase():v,o:i,s:s})
     i+=v.length
+    '([{⟨'.includes(t)?stk.push(t):')]}⟩'.includes(t)?stk.pop():0
+    if('NSJ'.includes(t))c=NOUN
+    if(t==='X'){
+      if(v[0]==='_'){c=ADV;let e=v.length-1;if(v[e]==='_')c=CNJ;else e++;v=v.slice(1,e).toLowerCase()}
+      else if(/[•A-Za-z]/.test(v[0])){c=/[A-Z]/.test(v[v[0]==='•'?1:0])?VRB:NOUN;v=v.toLowerCase()}
+      else c=/[˜¨˘⁼⌜´`]/.test(v)?ADV:/[⊸∘○⟜⌾⚇⎉⍟⍠⍁]/.test(v)?CNJ:/𝕗|𝕘|𝕨|𝕩|[⍬π]/.test(v)?NOUN:VRB
+    }
+    if(t!=='-')a.push({t,v,c,o,s}) // t:type, v:value, c:syntactic class, o:offset
   }
-  a.push({t:'$',v:'',o:i,s})
+  a.push({t:'$',v:'',c:0,o:i,s})
   // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '⍬' ()  '{' {}  '[' a[b]  '←' a←b  '.' a b
   // '.' gets replaced with: 'V' 1 2  'M' +1  'D' 1+2  'A' +/  'C' +.×  'T' +÷
   i=0 // offset in a
@@ -206,18 +212,11 @@ const ltr='_A-Za-z'
   }
   ,obj=_=>{
     let x,n=a[i++]
-    if('NSXJ'.includes(n.t))x=[n.t,n.v]
+    if('NSXJ'.includes(n.t))x=[n.t,n.v,n.c]
     else if(n.t==='('){if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
     else if(n.t==='{'){x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
     else if(n.t==='⟨'){x=['V',expr()];while(a[i].t==='⋄'){i++;x.push(expr())}dmnd('⟩')}
     else{i--;prsErr()}
-    if(a[i].t==='['){
-      i++;x=['[',x]
-      while(1){if(a[i].t===';'){i++;x.push(null)}
-               else if(a[i].t===']'){x.push(null);break}
-               else{x.push(expr());if(a[i].t===']'){break}else{dmnd(';')}}}
-      dmnd(']')
-    }
     return x
   }
   return[body(),dmnd('$')][0]
@@ -533,6 +532,7 @@ voc['⍷']=(y,x)=>{
   }
   return A(r,y.s)
 }
+voc._atop=voc['∘']
 voc._fork1=(h,g)=>{asrt(typeof h==='function');return[h,g]}
 voc._fork2=(hg,f)=>{let[h,g]=hg;return(b,a)=>g(h(b,a),toF(f)(b,a))}
 voc['⍕']=(y,x)=>{x&&nyiErr();let t=fmt(y);return A(t.join(''),[t.length,t[0].length])}
@@ -636,22 +636,22 @@ voc['set_•']=x=>{
   if(typeof window!=='undefined'&&typeof window.alert==='function'){window.alert(s)}else{process.stdout.write(s)}
   return x
 }
-voc['get_•IO']=_=>A.zero
-voc['set_•IO']=x=>match(x,A.zero)?x:domErr()
-voc['•DL']=cps((y,x,_,cb)=>{let t0=+new Date;setTimeout(_=>{cb(A([new Date-t0]))},unw(y))})
-voc['•RE']=(y,x)=>{
+voc['get_•io']=_=>A.zero
+voc['set_•io']=x=>match(x,A.zero)?x:domErr()
+voc['•dl']=cps((y,x,_,cb)=>{let t0=+new Date;setTimeout(_=>{cb(A([new Date-t0]))},unw(y))})
+voc['•re']=(y,x)=>{
   x=str(x),y=str(y)
   let re;try{re=RegExp(x)}catch(e){domErr()}
   let m=re.exec(y);if(!m)return A.zld
   let r=[m.index];for(let i=0;i<m.length;i++)r.push(A(m[i]||''))
   return A(r)
 }
-voc['•UCS']=(y,x)=>{
+voc['•ucs']=(y,x)=>{
   x&&nyiErr()
   const f=u=>u.isA?each(f)(u):isInt(u,0,0x10000)?String.fromCharCode(u):typeof u==='string'?u.charCodeAt(0):domErr()
   return f(y)
 }
-voc['get_•OFF']=_=>{typeof process==='undefined'&&nyiErr();process.exit(0)}
+voc['get_•off']=_=>{typeof process==='undefined'&&nyiErr();process.exit(0)}
 voc['?']=(y,x)=>has(x)?deal(y,x):roll(y)
 const roll=perv(y=>{isInt(y,1)||domErr();return Math.floor(Math.random()*y)})
 ,deal=(y,x)=>{
@@ -914,10 +914,10 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   }
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
   const gl=x=>{switch(x[0]){default:asrt(0) // categorise lambdas
-    case'B':case':':case'←':case'[':case'{':case'.':case'⍬':
+    case'B':case':':case'←':case'{':case'.':
       let r=VRB;for(let i=1;i<x.length;i++)if(x[i])r=Math.max(r,gl(x[i]))
       if(x[0]==='{'){x.g=r;return VRB}else{return r}
-    case'S':case'N':case'J':case'V':return 0
+    case'S':case'N':case'J':case'V':case'⍬':return 0
     case'X':{const s=x[1];return s==='𝕗'||s==='𝔽'||s==='∇∇'?ADV:s==='𝕘'||s==='𝔾'?CNJ:VRB}
   }}
   gl(ast)
@@ -929,24 +929,22 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       switch(x[0]){default:asrt(0)
         case':':{const r=vst(x[1]);vst(x[2]);return r}
         case'←':return vstLHS(x[1],vst(x[2]))
-        case'X':{
-          const s=x[1],v=scp.v['get_'+s];if(v&&v.g===VRB)return NOUN
-          return(scp.v[s]||{}).g||valErr({file:o.file,offset:x.offset,aplCode:o.aplCode})
-        }
+        case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode})
+        case'S':case'N':case'J':return x[2]
         case'{':{
           for(let i=1;i<x.length;i++){
             const d=scp.d+1+(x.g!==VRB) // slot 3 is reserved for a "base pointer"
-            ,v=extend(Object.create(scp.v),{'𝕩':{i:0,d,g:NOUN},'∇':{i:1,d,g:VRB},'𝕨':{i:2,d,g:NOUN},'→':{d,g:VRB}})
+            ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]={i,d,g:NOUN};v[u]={i,d,g:VRB}}
+            arg('𝕩','𝕏',0,d);v['∇']={i:1,d,g:VRB};arg('𝕨','𝕎',2,d);v['→']={d,g:VRB}
 
             q.push(extend(x[i],{scp,d,n:4,v}))
-            if(x.g===CNJ){v['𝕘']=v['𝔾']={i:0,d:d-1,g:VRB};v['∇∇']={i:1,d:d-1,g:CNJ};v['𝕗']=v['𝔽']={i:2,d:d-1,g:VRB}}
-            else if(x.g===ADV){v['𝕗']=v['𝔽']={i:0,d:d-1,g:VRB};v['∇∇']={i:1,d:d-1,g:ADV}}
+            if(x.g===CNJ){arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1,g:CNJ};arg('𝕗','𝔽',2,d-1)}
+            else if(x.g===ADV){arg('𝕗','𝔽',0,d-1);v['∇∇']={i:1,d:d-1,g:ADV}}
           }
           return x.g||VRB
         }
-        case'S':case'N':case'J':case'⍬':return NOUN
-        case'V':{for(let i=1;i<x.length;i++)if(vst(x[i])!==NOUN)synErrAt(x);return NOUN}
-        case'[':{for(let i=2;i<x.length;i++)if(x[i]&&vst(x[i])!==NOUN)synErrAt(x);return vst(x[1])}
+        case'V':{for(let i=1;i<x.length;i++)vst(x[i]);return NOUN}
+        case'⍬':return NOUN
         case'.':{
           let a=x.slice(1),h=Array(a.length);for(let i=a.length-1;i>=0;i--)h[i]=vst(a[i])
           // adverbs and conjunctions
@@ -977,10 +975,9 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       x.scp=scp
       switch(x[0]){default:asrt(0)
         case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x)
-                if(scp.v[s]){scp.v[s].g!==rg&&synErrAt(x)}else{scp.v[s]={d:scp.d,i:scp.n++,g:rg}};break
+                x[2]===rg||synErrAt(x);if(!scp.v[s]){scp.v[s]={d:scp.d,i:scp.n++,g:rg}};break
         case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg);break
         case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg);break
-        case'[':rg===NOUN||synErrAt(x);vstLHS(x[1],rg);for(let i=2;i<x.length;i++)x[i]&&vst(x[i]);break
       }
       return rg
     }
@@ -1020,10 +1017,6 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v&&v.g===VRB?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
     case'.':return rndrLHS(x[1])
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
-    case'[':{const h=[],a=[],v=x.scp.v._amend // index assignment
-             for(let i=2;i<x.length;i++)if(x[i]){h.push(i-2);a.push.apply(a,rndr(x[i]))}
-             a.push(VEC,h.length);a.push.apply(a,rndr(x[1]));a.push(LDC,A(h),VEC,4,GET,v.d,v.i,MON)
-             a.push.apply(a,rndrLHS(x[1]));return a}
   }}
   return rndr(ast)
 }

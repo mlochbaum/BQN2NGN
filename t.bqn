@@ -371,14 +371,14 @@ t←3‿3⥊4‿5‿6‿1‿1‿3‿1‿1‿2⋄⍋⊸⊏˜t ←→ 3‿3⥊ 1�
 a←3‿2‿3⥊2‿3‿4‿0‿1‿0‿1‿1‿3‿4‿5‿6‿1‿1‿2‿10‿11‿12⋄⍋⊸⊏˜a ←→ 3‿2‿3⥊1‿1‿2‿10‿11‿12‿1‿1‿3‿4‿5‿6‿2‿3‿4‿0‿1‿0
 a←3‿2‿5⥊"joe  doe  bob  jonesbob  zwart"⋄⍋⊸⊏˜a ←→ 3‿2‿5⥊"bob  jonesbob  zwartjoe  doe  "
 "ZYXWVUTSRQPONMLKJIHGFEDCBA"⍋∘⊐"ZAMBIA" ←→ 0‿2‿4‿3‿1‿5
-•A←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"⋄(⌽•A)⍋∘⊐3‿3⥊"BOBALFZAK" ←→ 2‿0‿1
+•aa←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"⋄(⌽•aa)⍋∘⊐3‿3⥊"BOBALFZAK" ←→ 2‿0‿1
 a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[(2‿26⥊"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")⍋∘⊐a;] ←→ 6‿4⥊"ABELaBELABLEaBLEACESACRE"
 a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[("AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz")⍋∘⊐a;] ←→ 6‿4⥊"ABELABLEACESACREaBELaBLE"
 ⍋0‿1‿2‿3‿4‿3‿6‿6‿4‿9‿1‿11‿12‿13‿14‿15 ←→ 0‿1‿10‿2‿3‿5‿4‿8‿6‿7‿9‿11‿12‿13‿14‿15
 ⍒3‿1‿8 ←→ 2‿0‿1
-f←{𝕨+2×𝕩}⋄f´⍬ !! DOMAIN ERROR
-f←{𝕨+2×𝕩}⋄>(f⍁123)´⍬ ←→ 123
-f←{𝕨+2×𝕩}⋄g←f⍁789⋄f´⍬ !! DOMAIN ERROR
+F←{𝕨+2×𝕩}⋄F´⍬ !! DOMAIN ERROR
+F←{𝕨+2×𝕩}⋄>(F⍁123)´⍬ ←→ 123
+F←{𝕨+2×𝕩}⋄G←F⍁789⋄F´⍬ !! DOMAIN ERROR
 ({}⍁(1‿2))´⍬ ←→ <1‿2
 ({}⍁(1‿1‿1⥊123))´⍬ ←→ <1‿1‿1⥊123
 2‿5‿9‿14‿20⊐<9 ←→ <2
@@ -457,8 +457,8 @@ f←{𝕨+2×𝕩}⋄g←f⍁789⋄f´⍬ !! DOMAIN ERROR
 'a'(∾⍟3)'b' ←→ "aaab"
 1{𝕨+÷𝕩}⍟=1 ←→ 1.618033988749895
 c←0⋄5⍟{c←c+1}0⋄c ←→ 5
-•IO ←→ 0
-•IO←0 ←→ 0
+•io ←→ 0
+•io←0 ←→ 0
 "b(c+)d"•RE"abcd" ←→ 1‿"bcd"‿"c"
 "B(c+)d"•RE"abcd" ←→ ⍬
 "a(b"•RE"c" !! DOMAIN ERROR
@@ -473,7 +473,7 @@ n←6⋄r←?n⋄(0≤r)∧(r<n) ←→ 1
 ?1j2 !! DOMAIN ERROR
 ?∞ !! DOMAIN ERROR
 n←100⋄(+´n?n)≡(+´↕n) ←→ 1 # a permutation (an "n?n" dealing) contains all 0...n
-n←100⋄A←(n÷2)?n⋄>∧´(0≤A)∾A<n ←→ 1 # any number x in a dealing is 0 <= x < n
+n←100⋄a←(n÷2)?n⋄>∧´(0≤a)∾a<n ←→ 1 # any number x in a dealing is 0 <= x < n
 0?100 ←→ ⍬
 0?0 ←→ ⍬
 1?1 ←→ ⥊0
@@ -644,25 +644,25 @@ x⋄x←0 !! VALUE ERROR
 {}0 ←→ ⍬
 a←5 ←→ 5
 a×a←2‿5 ←→ 4‿25
-r←3⋄get_c←{2×π×r}⋄get_S←{π×r⋆2}⋄bef←.01×⌊100×r‿c‿S⋄r←r+1⋄aft←.01×⌊100×r‿c‿S⋄bef‿aft ←→ ⟨3‿18.84‿28.27⋄4‿25.13‿50.26⟩
+r←3⋄GET_c←{2×π×r}⋄GET_s←{π×r⋆2}⋄bef←.01×⌊100×r‿c‿s⋄r←r+1⋄aft←.01×⌊100×r‿c‿s⋄bef‿aft ←→ ⟨3‿18.84‿28.27⋄4‿25.13‿50.26⟩
 {𝕨}0 !! VALUE ERROR
 {x}0⋄x←0 !! VALUE ERROR
 {→1⋄2}⍬ ←→ 1
-c←{}⋄x←{c←→⋄1}⍬⋄{x=1:c 2⋄x}⍬ ←→ 2
+C←{}⋄x←{C←→⋄1}⍬⋄{x=1:C 2⋄x}⍬ ←→ 2
 {1+1}1 ←→ 2
 {𝕩=0:1⋄2×∇𝕩-1}5 ←→ 32
 {𝕩<2:1⋄(∇𝕩-1)+∇𝕩-2}8 ←→ 34
 <{𝔽𝔽𝕩}"ab" ←→ <<"ab"
 <{𝔽𝔾𝕩}⌽"ab" ←→ <"ba"
 +{𝕩𝔽𝕩}1‿2 ←→ 2‿4
-f←{𝕩𝔽𝕩}⋄+f 1‿2 ←→ 2‿4
-tw←{𝔽𝔽𝕩}⋄⋆tw 2 ←→ 1618.1779919126539
-f←{-𝕩;𝕨×𝕩}⋄⟨f 5⋄3 f 5⟩ ←→ ¯5‿15
-f←{;}⋄⟨f 5⋄3 f 5⟩ ←→ ⍬‿⍬
-²←{𝔽𝔽𝕩;𝕨𝔽𝕨𝔽𝕩}⋄⋆²2 ←→ 1618.1779919126539
-²←{𝔽𝔽𝕨;𝕨𝔽𝕨𝔽𝕩}⋄3⋆²2 ←→ 19683
-H←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄+H÷2 ←→ 2.5
-H←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄7+H÷2 ←→ 7.5
+_f←{𝕩𝔽𝕩}⋄+_f 1‿2 ←→ 2‿4
+_tw←{𝔽𝔽𝕩}⋄⋆_tw 2 ←→ 1618.1779919126539
+F←{-𝕩;𝕨×𝕩}⋄⟨F 5⋄3 F 5⟩ ←→ ¯5‿15
+F←{;}⋄⟨F 5⋄3 F 5⟩ ←→ ⍬‿⍬
+_2←{𝔽𝔽𝕩;𝕨𝔽𝕨𝔽𝕩}⋄⋆_2 2 ←→ 1618.1779919126539
+_2←{𝔽𝔽𝕨;𝕨𝔽𝕨𝔽𝕩}⋄3⋆_2 2 ←→ 19683
+_H_←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄+_H_÷2 ←→ 2.5
+_H_←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄7+_H_÷2 ←→ 7.5
 ≢"" ←→ ⥊0
 ≢'x' ←→ ⍬
 ≢"xx" ←→ ⥊2
