@@ -597,6 +597,7 @@ voc['↕']=(y,x)=>{
     y.isA||domErr();const w=Array.from(getVec(x)),a=w.length
     a<=y.s.length||rnkErr();if(!a)return y
     for(let i=0;i<w.length;i++)isInt(w[i])||domErr()
+    for(let i=0;i<y.s.length;i++)w[i]<=y.s[i]+1||lenErr()
     const cs=y.s.slice(a),c=prd(cs),s=w.map((u,i)=>y.s[i]-u+1).concat(w,cs)
     let d=Array(a);for(let b=a,p=c;b--;p*=y.s[b])d[b]=p;d=d.concat(d)
     let i=d.map(_=>0),r=Array(prd(s)),cc=c*s[2*a-1]
