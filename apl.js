@@ -1,8 +1,9 @@
 //usr/bin/env node "$0" $@;exit $?
 'use strict'
-// ⊒\ ⚇⌾
+// ⊒\ ⚇
 const prelude=`
 ⍬←⟨⟩ ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+⌾←{𝔾⁼∘𝔽○𝔾}
 ¬←(1+-)⍁1
 ⊏←⊣´⍠⊏
 ↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
