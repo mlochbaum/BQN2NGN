@@ -748,6 +748,30 @@ voc['/']=(y,x)=>{
     return A(r)
   }
 }
+voc['/'].inverse=(y,x)=>{
+  if(has(x)){
+    y.isA&&y.s.length||domErr;const xa=getVec(x),n=y.s[0]
+    let l=xa.length,m=0;for(let i=0;i<l;i++){const u=xa[i];isInt(u,0)||domErr();m+=u}
+    m===n||domErr()
+    const c=prd(y.s.slice(1))
+    let r=Array(l*c);m=0;const pr=getProt(y)
+    for(let i=0;i<l;i++){
+      const u=xa[i]
+      if(!u){for(let k=0;k<c;k++)r[i*c+k]=pr}
+      else{
+        const e=m+c*u
+        for(let k=0;k<c;k++)r[i*c+k]=y.a[m+k];m+=c
+        for(;m<e;m+=c)for(let k=0;k<c;k++)match(r[i*c+k],y.a[m+k])||domErr()
+      }
+    }
+    return A(r,[l].concat(y.s.slice(1)))
+  }else{
+    const a=getVec(y)
+    let e=0;for(let i=0;i<a.length;i++){const u=a[i];isInt(u,e)||domErr();e=u}
+    let r=new Float64Array(e+1);for(let i=0;i<a.length;i++)r[a[i]]++
+    return A(r)
+  }
+}
 voc['⊑']=(y,x)=>{
   y.isA||domErr()
   let i=0

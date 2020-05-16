@@ -146,9 +146,9 @@ T←"ONE(TWO) BOOK(S)"⋄((T∊"()")¬∘∨≠`T∊"()")´T ←→ "ONE BOOK"
 0‿1‿0‿1‿0/⁼2‿3 ←→ 0‿2‿0‿3‿0
 (2‿2⥊0)/⁼"food" !! RANK ERROR
 "abc"/⁼"def" !! DOMAIN ERROR
-1‿0‿1‿1/⁼"ab" !! LENGTH ERROR
-1‿0‿1‿1/⁼"abcd" !! LENGTH ERROR
-1‿0‿1/⁼˘2‿2⥊"ABCD" ←→ 2‿3⥊"A BC D"
+1‿0‿1‿1/⁼"ab" !! DOMAIN ERROR
+1‿0‿1‿1/⁼"abcd" !! DOMAIN ERROR
+1‿0‿1/⁼⎉1 2‿2⥊"ABCD" ←→ 2‿3⥊"A BC D"
 1‿0‿1/⁼2‿2⥊"ABCD" ←→ 3‿2⥊"AB  CD"
 10∾66 ←→ 10‿66
 ⍬∾⍬ ←→ ⍬
