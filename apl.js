@@ -379,23 +379,6 @@ voc['∘']=conj((g,f)=>(y,x)=>f(toF(g)(y,x)))
 voc['○']=conj((g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined))
 voc['⊸']=conj((g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y)))
 voc['⟜']=conj((g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y))
-voc['⊥']=(y,x)=>{
-  asrt(x)
-  if(!x.isA||!x.s.length)x=A([x.isA?x.a[0]:x])
-  if(!y.isA||!y.s.length)y=A([y.isA?y.a[0]:y])
-  let lastDimA=x.s[x.s.length-1],firstDimB=y.s[0]
-  if(lastDimA!==1&&firstDimB!==1&&lastDimA!==firstDimB)lenErr()
-  let r=[],ni=x.a.length/lastDimA,nj=y.a.length/firstDimB
-  for(let i=0;i<ni;i++)for(let j=0;j<nj;j++){
-    let u=x.a.slice(i*lastDimA,(i+1)*lastDimA)
-    let v=[];for(let l=0;l<firstDimB;l++)v.push(y.a[j+l*(y.a.length/firstDimB)])
-    if(u.length===1)u=rpt([u[0]],v.length)
-    if(v.length===1)v=rpt([v[0]],u.length)
-    let z=v[0];for(let k=1;k<v.length;k++)z=Z.add(Z.mul(z,u[k]),v[k])
-    r.push(z)
-  }
-  return A(r,x.s.slice(0,-1).concat(y.s.slice(1)))
-}
 voc['⌜']=adv(f=>{
   f=toF(f)
   return(y,x)=>{
@@ -452,6 +435,23 @@ const rank=(getK,f)=>{
 voc['¨']=adv(each)
 voc['⎉']=conj(rank)
 voc['˘']=adv(f=>rank(-1,f))
+voc['⊥']=(y,x)=>{
+  asrt(x)
+  if(!x.isA||!x.s.length)x=A([x.isA?x.a[0]:x])
+  if(!y.isA||!y.s.length)y=A([y.isA?y.a[0]:y])
+  let lastDimA=x.s[x.s.length-1],firstDimB=y.s[0]
+  if(lastDimA!==1&&firstDimB!==1&&lastDimA!==firstDimB)lenErr()
+  let r=[],ni=x.a.length/lastDimA,nj=y.a.length/firstDimB
+  for(let i=0;i<ni;i++)for(let j=0;j<nj;j++){
+    let u=x.a.slice(i*lastDimA,(i+1)*lastDimA)
+    let v=[];for(let l=0;l<firstDimB;l++)v.push(y.a[j+l*(y.a.length/firstDimB)])
+    if(u.length===1)u=rpt([u[0]],v.length)
+    if(v.length===1)v=rpt([v[0]],u.length)
+    let z=v[0];for(let k=1;k<v.length;k++)z=Z.add(Z.mul(z,u[k]),v[k])
+    r.push(z)
+  }
+  return A(r,x.s.slice(0,-1).concat(y.s.slice(1)))
+}
 voc['⊤']=(y,x)=>{
   x||synErr();x.isA||domErr();y=toA(y)
   let s=x.s.concat(y.s),r=Array(prd(s)),n=x.s.length?x.s[0]:1,m=x.a.length/n
