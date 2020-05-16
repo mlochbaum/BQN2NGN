@@ -259,8 +259,6 @@ const voc={}
   }
 }
 ,withId=(x,f)=>{f.identity=x;return f}
-,adv =f=>{f.adv =1;return f}
-,conj=f=>{f.conj=1;return f}
 ,cps =f=>{f.cps =1;return f}
 
 voc['π']=Math.PI
@@ -373,12 +371,12 @@ voc['∾']=(y,x)=>{
 }
 voc['⊢']=(y,x)=>y
 voc['⊣']=(y,x)=>has(x)?x:y
-voc['˜']=adv(f=>(y,x)=>toF(f)(has(x)?x:y,y))
-voc['∘']=conj((g,f)=>(y,x)=>f(toF(g)(y,x)))
-voc['○']=conj((g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined))
-voc['⊸']=conj((g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y)))
-voc['⟜']=conj((g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y))
-voc['⌜']=adv(f=>{
+voc['˜']=f=>(y,x)=>toF(f)(has(x)?x:y,y)
+voc['∘']=(g,f)=>(y,x)=>f(toF(g)(y,x))
+voc['○']=(g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined)
+voc['⊸']=(g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y))
+voc['⟜']=(g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y)
+voc['⌜']=f=>{
   f=toF(f)
   return(y,x)=>{
     y=toA(y)
@@ -393,7 +391,7 @@ voc['⌜']=adv(f=>{
       return A(r,x.s.concat(y.s))
     }
   }
-})
+}
 const each=fn=>{
   fn=toF(fn)
   return(y,x)=>{
@@ -431,9 +429,9 @@ const rank=(getK,f)=>{
     return mix(A(r,fs.concat(es)))
   }
 }
-voc['¨']=adv(each)
-voc['⎉']=conj(rank)
-voc['˘']=adv(f=>rank(-1,f))
+voc['¨']=each
+voc['⎉']=rank
+voc['˘']=f=>rank(-1,f)
 voc['⊥']=(y,x)=>{
   asrt(x)
   if(!x.isA||!x.s.length)x=A([x.isA?x.a[0]:x])
@@ -622,12 +620,12 @@ voc['⊐']=(y,x)=>{
   for(let i=0;i<n;i++){r[i]=x.s[0];for(let j=0;j<m;j++)if(match(y.a[i],x.a[j])){r[i]=j;break}}
   return A(r,y.s)
 }
-voc['⍟']=conj((g,f)=>(y,x)=>{
+voc['⍟']=(g,f)=>(y,x)=>{
   typeof f==='function'||domErr()
   let n=toInt(toF(g)(y,x))
   if(n<0){f=voc['⁼'](f);n=-n}
   for(let i=0;i<n;i++)y=f(y,x);return y
-})
+}
 voc['get_•']=cps((_,_1,_2,cb)=>{
   if(typeof window!=='undefined'&&typeof window.prompt==='function'){setTimeout(_=>{cb(A(prompt('')||''))},0)}
   else{readline('',x=>cb(A(x)))}
@@ -696,7 +694,7 @@ voc['⌽']=(y,x)=>{
     return A(r,y.s)
   }
 }
-voc['´']=adv(f=>(y,x)=>{
+voc['´']=f=>(y,x)=>{
   y.isA&&y.s.length||rnkErr()
   const n=y.s[0],s=y.s.slice(1),c=prd(s)
   const cell=i=>A(y.a.slice(i*c,(i+1)*c),s)
@@ -707,13 +705,13 @@ voc['´']=adv(f=>(y,x)=>{
   }
   while(i--)x=f(x,cell(i))
   return x
-})
-voc['⍁']=conj((x,f)=>{
+}
+voc['⍁']=(x,f)=>{
   typeof f==='function'||domErr()
   return withId(x,(y,x)=>f(y,x))
-})
+}
 /*
-voc['`']=adv(f=>(y,x)=>{
+voc['`']=f=>(y,x)=>{
   asrt(x==null)
   if(!y.s.length)return y
   h=h?toInt(h,0,y.s.length):y.s.length-1
@@ -724,7 +722,7 @@ voc['`']=adv(f=>(y,x)=>{
     r[(i*nj+j)*nk+k]=u.s.length?u:unw(u)
   }
   return A(r,y.s)
-})
+}
 */
 voc['/']=(y,x)=>{
   if(has(x)){
@@ -869,9 +867,9 @@ voc['⍉']=(y,x,inv)=>{
   }
   return A(r,s)
 }
-voc['⍠']=conj((f,g)=>(y,x)=>(has(x)?f:g)(y,x))
+voc['⍠']=(f,g)=>(y,x)=>(has(x)?f:g)(y,x)
 
-voc['⁼']=adv(f=>f.inverse||domErr())
+voc['⁼']=f=>f.inverse||domErr()
 voc['+'].inverse=voc['⍠'](voc['˜'](voc['-']),voc['+'])
 voc['-'].inverse=voc['-']
 voc['×'].inverse=withId(1,perv(
@@ -897,7 +895,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   const t=prs(s,o),b=compile(t,o),e=[preludeData.env[0].slice()] // t:ast,b:bytecode,e:env
   for(let k in t.v)e[0][t.v[k].i]=o.ctx[k]
   const r=vm(b,e)
-  for(let k in t.v){const v=t.v[k],x=o.ctx[k]=e[0][v.i];if(v.g===ADV)x.adv=1;if(v.g===CNJ)x.conj=1}
+  for(let k in t.v)o.ctx[k]=e[0][t.v[k].i]
   return r
 }
 ,repr=x=>x===null||['string','number','boolean'].indexOf(typeof x)>=0?JSON.stringify(x):
@@ -906,12 +904,8 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
 ,compile=(ast,o={})=>{
   ast.d=0;ast.n=preludeData?preludeData.n:0;ast.v=preludeData?Object.create(preludeData.v):{} // n:nSlots,d:scopeDepth,v:vars
   o.ctx=o.ctx||Object.create(voc)
-  for(let key in o.ctx)if(!ast.v[key]){ // VarInfo{g:grammaticalCategory(1=noun,2=vrb,3=adv,4=cnj),i:slot,d:scopeDepth}
-    const u=o.ctx[key],v=ast.v[key]={g:NOUN,i:ast.n++,d:ast.d}
-    if(typeof u==='function'||u instanceof Proc){
-      v.g=u.adv?ADV:u.conj?CNJ:VRB
-      if(/^[gs]et_.*/.test(key))ast.v[key.slice(4)]={g:NOUN}
-    }
+  for(let key in o.ctx)if(!ast.v[key]){ // VarInfo{i:slot,d:scopeDepth}
+    const u=o.ctx[key],v=ast.v[key]={i:ast.n++,d:ast.d}
   }
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
   const gl=x=>{switch(x[0]){default:asrt(0) // categorise lambdas
@@ -935,12 +929,12 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
         case'{':{
           for(let i=1;i<x.length;i++){
             const d=scp.d+1+(x.g!==VRB) // slot 3 is reserved for a "base pointer"
-            ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]={i,d,g:NOUN};v[u]={i,d,g:VRB}}
-            arg('𝕩','𝕏',0,d);v['∇']={i:1,d,g:VRB};arg('𝕨','𝕎',2,d);v['→']={d,g:VRB}
+            ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]=v[u]={i,d}}
+            arg('𝕩','𝕏',0,d);v['∇']={i:1,d};arg('𝕨','𝕎',2,d);v['→']={d}
 
             q.push(extend(x[i],{scp,d,n:4,v}))
-            if(x.g===CNJ){arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1,g:CNJ};arg('𝕗','𝔽',2,d-1)}
-            else if(x.g===ADV){arg('𝕗','𝔽',0,d-1);v['∇∇']={i:1,d:d-1,g:ADV}}
+            if(x.g===CNJ){arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2,d-1)}
+            else if(x.g===ADV){arg('𝕗','𝔽',0,d-1);v['∇∇']={i:1,d:d-1}}
           }
           return x.g||VRB
         }
@@ -977,7 +971,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       x.scp=scp
       switch(x[0]){default:asrt(0)
         case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x)
-                x[2]===rg||synErrAt(x);if(!scp.v[s]){scp.v[s]={d:scp.d,i:scp.n++,g:rg}};break
+                x[2]===rg||synErrAt(x);if(!scp.v[s]){scp.v[s]={d:scp.d,i:scp.n++}};break
         case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg);break
         case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg);break
       }
@@ -992,7 +986,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     case':':{const r=rndr(x[1]),y=rndr(x[2]);return r.concat(JEQ,y.length+2,POP,y,RET)}
     case'←':return rndr(x[2]).concat(rndrLHS(x[1]))
     case'X':{const s=x[1],vars=x.scp.v,v=vars['get_'+s]
-             return s==='→'?[CON]:v&&v.g===VRB?[LDC,A.zero,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
+             return s==='→'?[CON]:v?[LDC,A.zero,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
              if(x.length===2){f=lx}
              else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y),v=x.scp.v['⍠']
@@ -1016,7 +1010,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              return i?r.concat(GET,u.d,u.i,rndr(x[1]),DYA):r}
   }}
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
-    case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v&&v.g===VRB?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
+    case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
     case'.':return rndrLHS(x[1])
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
   }}
