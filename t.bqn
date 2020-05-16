@@ -283,7 +283,7 @@ T←"ONE(TWO) BOOK(S)"⋄((T∊"()")¬∘∨≠`T∊"()")´T ←→ "ONE BOOK"
 0j1‿2j3‿4j5⊤6j7 ←→ 0‿¯2j2‿2j2
 (8‿3⥊2‿0‿0‿2‿0‿0‿2‿0‿0‿2‿0‿0‿2‿8‿0‿2‿8‿0‿2‿8‿16‿2‿8‿16)⊤75 ←→ 8‿3⥊0‿0‿0‿1‿0‿0‿0‿0‿0‿0‿0‿0‿1‿0‿0‿0‿1‿0‿1‿1‿4‿1‿3‿11
 2‿3‿4‿5‿6∊1‿2‿3‿5‿8‿13‿21 ←→ 1‿1‿0‿1‿0
-5∊1‿2‿3‿5‿8‿13‿21 ←→ 1
+5<⊸∊1‿2‿3‿5‿8‿13‿21 ←→ <1
 ∊17 ←→ ⥊17
 ≢∊⟨1‿2‿3⋄"ab"⋄4‿5‿6⟩ ←→ ⥊8
 ∊2‿2⥊⟨1+2‿2⥊↕4⋄"ab"⋄1+2‿3⥊↕6⋄7‿8⟩ ←→ 1‿2‿3‿4∾"ab"∾1‿2‿3‿4‿5‿6‿7‿8
@@ -370,10 +370,10 @@ t←3‿3⥊4‿5‿6‿1‿1‿3‿1‿1‿2⋄⍋t ←→ 2‿1‿0
 t←3‿3⥊4‿5‿6‿1‿1‿3‿1‿1‿2⋄⍋⊸⊏˜t ←→ 3‿3⥊ 1‿1‿2‿1‿1‿3‿4‿5‿6
 a←3‿2‿3⥊2‿3‿4‿0‿1‿0‿1‿1‿3‿4‿5‿6‿1‿1‿2‿10‿11‿12⋄⍋⊸⊏˜a ←→ 3‿2‿3⥊1‿1‿2‿10‿11‿12‿1‿1‿3‿4‿5‿6‿2‿3‿4‿0‿1‿0
 a←3‿2‿5⥊"joe  doe  bob  jonesbob  zwart"⋄⍋⊸⊏˜a ←→ 3‿2‿5⥊"bob  jonesbob  zwartjoe  doe  "
-"ZYXWVUTSRQPONMLKJIHGFEDCBA"⍋"ZAMBIA" ←→ 0‿2‿4‿3‿1‿5
-•A←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"⋄(⌽•A)⍋3‿3⥊"BOBALFZAK" ←→ 2‿0‿1
-a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[(2‿26⥊"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")⍋a;] ←→ 6‿4⥊"ABELaBELABLEaBLEACESACRE"
-a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[("AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz")⍋a;] ←→ 6‿4⥊"ABELABLEACESACREaBELaBLE"
+"ZYXWVUTSRQPONMLKJIHGFEDCBA"⍋∘⊐"ZAMBIA" ←→ 0‿2‿4‿3‿1‿5
+•A←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"⋄(⌽•A)⍋∘⊐3‿3⥊"BOBALFZAK" ←→ 2‿0‿1
+a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[(2‿26⥊"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")⍋∘⊐a;] ←→ 6‿4⥊"ABELaBELABLEaBLEACESACRE"
+a←6‿4⥊"ABLEaBLEACREABELaBELACES"⋄a[("AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz")⍋∘⊐a;] ←→ 6‿4⥊"ABELABLEACESACREaBELaBLE"
 ⍋0‿1‿2‿3‿4‿3‿6‿6‿4‿9‿1‿11‿12‿13‿14‿15 ←→ 0‿1‿10‿2‿3‿5‿4‿8‿6‿7‿9‿11‿12‿13‿14‿15
 ⍒3‿1‿8 ←→ 2‿0‿1
 f←{𝕨+2×𝕩}⋄f´⍬ !! DOMAIN ERROR
@@ -388,9 +388,9 @@ f←{𝕨+2×𝕩}⋄g←f⍁789⋄f´⍬ !! DOMAIN ERROR
 "ab"‿"cd"‿"efg"⊐"cd"‿"efh" ←→ 1‿3
 1‿3‿2‿0‿3⊐↕5 ←→ 3‿0‿2‿1‿5
 "cat"‿"dog"‿"mouse"⊐"dog"‿"bird" ←→ 1‿3
-1⊐1 !! RANK ERROR
-(1‿2⥊3)⊐3 !! RANK ERROR
-1‿1⊐1 ←→ 0
+1⊐○<1 !! RANK ERROR
+(1‿2⥊3)⊐<3 !! RANK ERROR
+1‿1⊐<1 ←→ <0
 ⍬⊐1‿2 ←→ 0‿0
 1‿2⊐⍬ ←→ ⍬
 ↕5 ←→ 0‿1‿2‿3‿4
