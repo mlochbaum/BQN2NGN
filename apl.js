@@ -167,7 +167,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
      ['.',/^[\(\){\}⟨⟩‿:;←]/],            // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
      ['J',/^«[^»]*»/],                    // JS literal
-     ['X',RegExp('^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])','i')]] // identifier
+     ['X',/^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])/]] // identifier
 ,prs=(s,o)=>{
   // tokens are {t:type,v:value,o:offset,s:aplCode}
   // "stk" tracks bracket nesting and causes '\n' tokens to be dropped when the latest unclosed bracket is '(' or '['
@@ -214,7 +214,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
     let x,n=a[i++]
     if('NSXJ'.includes(n.t))x=[n.t,n.v,n.c]
     else if(n.t==='('){x=expr();dmnd(')')}
-    else if(n.t==='{'){x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
+    else if(n.t==='{'){x=['{',body()];if(a[i].t===';'){i++;x.push(body())}dmnd('}')}
     else if(n.t==='⟨'){x=['V'];if(a[i].t!=='⟩'){i--;do{i++;x.push(expr())}while(a[i].t==='⋄')}dmnd('⟩')}
     else{i--;prsErr()}
     return x
@@ -907,11 +907,11 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   }
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
   const gl=x=>{switch(x[0]){default:asrt(0) // categorise lambdas
-    case'B':case':':case'←':case'{':case'.':
-      let r=VRB;for(let i=1;i<x.length;i++)if(x[i])r=Math.max(r,gl(x[i]))
-      if(x[0]==='{'){x.g=r;return VRB}else{return r}
-    case'S':case'N':case'J':case'V':return 0
-    case'X':{const s=x[1];return s==='𝕗'||s==='𝔽'||s==='∇∇'?ADV:s==='𝕘'||s==='𝔾'?CNJ:VRB}
+    case'B':case':':case'←':case'{':case'.':case'V':
+      let r=0;for(let i=1;i<x.length;i++)if(x[i])r|=gl(x[i])
+      if(x[0]==='{'){x.g=r;return 0}else{return r}
+    case'S':case'N':case'J':return 0
+    case'X':{const s=x[1];return/^(𝕗|𝔽|∇∇)$/.test(s)?1<<ADV:/^(𝕘|𝔾)$/.test(s)?1<<CNJ:/^(𝕨|𝕩|𝕎|𝕏)$/.test(s)?1<<VRB:0}
   }}
   gl(ast)
   const q=[ast] // queue for "body" nodes
@@ -925,16 +925,16 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
         case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode})
         case'S':case'N':case'J':return x[2]
         case'{':{
+          const c=x.g&(1<<CNJ)?1:0,o=c||(x.g&(1<<ADV))?1:0
           for(let i=1;i<x.length;i++){
-            const d=scp.d+1+(x.g!==VRB) // slot 3 is reserved for a "base pointer"
+            const d=scp.d+1+o // slot 3 is reserved for a "base pointer"
             ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]=v[u]={i,d}}
             arg('𝕩','𝕏',0,d);v['∇']={i:1,d};arg('𝕨','𝕎',2,d);v['→']={d}
 
             q.push(extend(x[i],{scp,d,n:4,v}))
-            if(x.g===CNJ){arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2,d-1)}
-            else if(x.g===ADV){arg('𝕗','𝔽',0,d-1);v['∇∇']={i:1,d:d-1}}
+            if(o){if(c)arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2*c,d-1)}
           }
-          return x.g||VRB
+          return !o?VRB:c?CNJ:ADV
         }
         case'V':{for(let i=1;i<x.length;i++)vst(x[i]);return NOUN}
         case'.':{
@@ -989,7 +989,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y),v=x.scp.v['⍠']
                                    f=ly.concat(GET,v.d,v.i,lx,DYA)}
              else{synErrAt(x)}
-             return x.g===VRB?f:[LAM,f.length+1].concat(f,RET)}
+             return !((x.g&(1<<ADV|1<<CNJ))&&(x.g&(1<<VRB)))?f:[LAM,f.length+1].concat(f,RET)}
     case'S':{const o=x[1].slice(0,1),s=x[1].slice(1,-1).replace(o+o,o);if(o==="'"){s.length===1||synErrAt(x);return[LDC,s]}else return[LDC,A(s.split(''))]}
     case'N':{const a=x[1].replace(/¯/g,'-').split(/j/i).map(x=>x==='∞'?Infinity:x==='-∞'?-Infinity:parseFloat(x))
              return[LDC,a[1]?new Z(a[0],a[1]):a[0]]}
