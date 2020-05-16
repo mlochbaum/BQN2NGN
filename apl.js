@@ -950,10 +950,11 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
           // adverbs and conjunctions
           let i=0
           while(i<a.length){
-            if(h[i]===VRB&&i+1<a.length&&h[i+1]===ADV){
+            const rand=c=>c===NOUN||c===VRB
+            if(rand(h[i])&&i+1<a.length&&h[i+1]===ADV){
               a.splice(i,2,['A'].concat(a.slice(i,i+2)));h.splice(i,2,VRB)
-            }else if((h[i]===NOUN||h[i]===VRB||h[i]===CNJ)&&i+2<a.length&&h[i+1]===CNJ&&(h[i+2]===NOUN||h[i+2]===VRB)){
-              a.splice(i,3,['C'].concat(a.slice(i,i+3)));h.splice(i,3,VRB) // allow CNJ,CNJ,... for ∘.f
+            }else if(rand(h[i])&&i+2<a.length&&h[i+1]===CNJ&&rand(h[i+2])){
+              a.splice(i,3,['C'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
             }else{
               i++
             }
