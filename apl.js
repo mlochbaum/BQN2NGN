@@ -381,8 +381,8 @@ voc['⊸']=conj((g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y)))
 voc['⟜']=conj((g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y))
 voc['⊥']=(y,x)=>{
   asrt(x)
-  if(!x.s.length)x=A([unw(x)])
-  if(!y.s.length)y=A([unw(y)])
+  if(!x.isA||!x.s.length)x=A([x.isA?x.a[0]:x])
+  if(!y.isA||!y.s.length)y=A([y.isA?y.a[0]:y])
   let lastDimA=x.s[x.s.length-1],firstDimB=y.s[0]
   if(lastDimA!==1&&firstDimB!==1&&lastDimA!==firstDimB)lenErr()
   let r=[],ni=x.a.length/lastDimA,nj=y.a.length/firstDimB
@@ -453,7 +453,7 @@ voc['¨']=adv(each)
 voc['⎉']=conj(rank)
 voc['˘']=adv(f=>rank(-1,f))
 voc['⊤']=(y,x)=>{
-  x||synErr()
+  x||synErr();x.isA||domErr();y=toA(y)
   let s=x.s.concat(y.s),r=Array(prd(s)),n=x.s.length?x.s[0]:1,m=x.a.length/n
   for(let i=0;i<m;i++)for(let j=0;j<y.a.length;j++){
     let v=y.a[j];v=typeof v==='number'?Math.abs(v):v
