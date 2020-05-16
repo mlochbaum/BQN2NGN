@@ -6,7 +6,7 @@ const prelude=`
 _atop←{𝔽𝔾𝕩;𝔽𝕨𝔾𝕩}
 ¬←(1+-)⍁1
 ⊏←⊣´⍠⊏
-↓←{s←(≠𝕨)(⊣↑⊢∾1⥊˜×⟜(0=≠))≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
+↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
 ↑←((↕1+≠)↑¨<)⍠↑
 ↓←((↕1+≠)↓¨<)⍠↓
 ∊←⊐˜≠≠∘⊢
@@ -793,17 +793,16 @@ voc['↑']=(y,x)=>{
   has(x)||nyiErr()
   y=toA(y)
   let t=getVec(x)
-  if(!y.s.length)y=A([unw(y)],x.isA&&x.s.length?rpt([1],x.s[0]):[1])
-  t.length<=y.s.length||rnkErr()
   for(let i=0;i<t.length;i++)isInt(t[i])||domErr()
-  let s=y.s.slice();for(let i=0;i<t.length;i++)s[i]=Math.abs(t[i])
+  let ys=rpt([1],Math.max(0,t.length-y.s.length)).concat(y.s)
+  let s=ys.slice();for(let i=0;i<t.length;i++)s[i]=Math.abs(t[i])
   let d=Array(s.length);d[d.length-1]=1
   for(let i=d.length-1;i>0;i--)d[i-1]=d[i]*s[i]
   let r=rpt([getProt(y)],prd(s))
-  let cs=s.slice(),p=0,q=0,xd=strides(y.s) // cs:shape to copy
+  let cs=s.slice(),p=0,q=0,xd=strides(ys) // cs:shape to copy
   for(let i=0;i<t.length;i++){
-    let u=t[i];cs[i]=Math.min(y.s[i],Math.abs(u))
-    if(u<0){if(u<-y.s[i]){q-=(u+y.s[i])*d[i]}else{p+=(u+y.s[i])*xd[i]}}
+    let u=t[i];cs[i]=Math.min(ys[i],Math.abs(u))
+    if(u<0){if(u<-ys[i]){q-=(u+ys[i])*d[i]}else{p+=(u+ys[i])*xd[i]}}
   }
   if(prd(cs)){
     let ci=new Int32Array(cs.length) // ci:indices for copying
