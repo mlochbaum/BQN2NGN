@@ -2,7 +2,7 @@
 'use strict'
 // ⊒\ ⚇⌾
 const prelude=`
-⍬←() ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+⍬←⟨⟩ ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ¬←(1+-)⍁1
 ⊏←⊣´⍠⊏
 ↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
@@ -164,7 +164,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
-     ['.',/^[\(\)\[\]\{\}⟨⟩‿:;←]/],       // punctuation
+     ['.',/^[\(\){\}⟨⟩‿:;←]/],            // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
      ['J',/^«[^»]*»/],                    // JS literal
      ['X',RegExp('^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])','i')]] // identifier
@@ -187,7 +187,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
     if(t!=='-')a.push({t,v,c,o,s}) // t:type, v:value, c:syntactic class, o:offset
   }
   a.push({t:'$',v:'',c:0,o:i,s})
-  // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '⍬' ()  '{' {}  '[' a[b]  '←' a←b  '.' a b
+  // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '{' {}  '←' a←b  '.' a b
   // '.' gets replaced with: 'V' 1 2  'M' +1  'D' 1+2  'A' +/  'C' +.×  'T' +÷
   i=0 // offset in a
   const dmnd=x=>a[i].t===x?i++:prsErr()
@@ -213,9 +213,9 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
   ,obj=_=>{
     let x,n=a[i++]
     if('NSXJ'.includes(n.t))x=[n.t,n.v,n.c]
-    else if(n.t==='('){if(a[i].t===')'){i++;x=['⍬']}else{x=expr();dmnd(')')}}
+    else if(n.t==='('){x=expr();dmnd(')')}
     else if(n.t==='{'){x=['{',body()];while(a[i].t===';'){i++;x.push(body())}dmnd('}')}
-    else if(n.t==='⟨'){x=['V',expr()];while(a[i].t==='⋄'){i++;x.push(expr())}dmnd('⟩')}
+    else if(n.t==='⟨'){x=['V'];if(a[i].t!=='⟩'){i--;do{i++;x.push(expr())}while(a[i].t==='⋄')}dmnd('⟩')}
     else{i--;prsErr()}
     return x
   }
@@ -910,7 +910,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     case'B':case':':case'←':case'{':case'.':
       let r=VRB;for(let i=1;i<x.length;i++)if(x[i])r=Math.max(r,gl(x[i]))
       if(x[0]==='{'){x.g=r;return VRB}else{return r}
-    case'S':case'N':case'J':case'V':case'⍬':return 0
+    case'S':case'N':case'J':case'V':return 0
     case'X':{const s=x[1];return s==='𝕗'||s==='𝔽'||s==='∇∇'?ADV:s==='𝕘'||s==='𝔾'?CNJ:VRB}
   }}
   gl(ast)
@@ -937,7 +937,6 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
           return x.g||VRB
         }
         case'V':{for(let i=1;i<x.length;i++)vst(x[i]);return NOUN}
-        case'⍬':return NOUN
         case'.':{
           let a=x.slice(1),h=Array(a.length);for(let i=a.length-1;i>=0;i--)h[i]=vst(a[i])
           // adverbs and conjunctions
@@ -999,7 +998,6 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              for(let i=1;i<x.length;i++){const f=rndr(x[i]);frags.push(f);if(f.length!==2||f[0]!==LDC)allConst=0}
              return allConst?[LDC,A(frags.map(f=>f[1]))]
                             :[].concat.apply([],frags).concat([VEC,x.length-1])}
-    case'⍬':return[LDC,A.zld]
     case'M':return rndr(x[2]).concat(rndr(x[1]),MON)
     case'A':return rndr(x[1]).concat(rndr(x[2]),MON)
     case'D':case'C':return rndr(x[3]).concat(rndr(x[2]),rndr(x[1]),DYA)
