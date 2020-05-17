@@ -577,10 +577,7 @@ const tao_cmp=(a,b)=>{ // like ×∘-
   if(a.isA||b.isA){
     const em=x=>x.isA&&x.a.length===0?1:0,ae=em(a),be=em(b);if(ae!==be)return be-ae
     if(!a.isA)return tao_cmp(a,b.a[0])||-1;if(!b.isA)return tao_cmp(a.a[0],b)||1
-    let as=a.s,bs=b.s,r=as.length,s=bs.length,c=0
-    if(r!==s){if(r<s){c=-1;bs=bs.slice(s-r)}else{c=1;as=as.slice(r-s);r=s}}
-    let l=1;while(r--){const m=as[r],n=bs[r];l*=Math.min(m,n);if(m!==n){c=m<n?-1:1;break}}
-    return vec_cmp(a.a,0,b.a,0,l)||c
+    return tao_getcc(a.s,b.s)(a.a,0,b.a,0)
   }else{
     const ta=typeof a,tb=typeof b
     ta==='function'||tb==='function'&&domErr()
@@ -595,14 +592,31 @@ const tao_cmp=(a,b)=>{ // like ×∘-
 const vec_cmp=(u,i,v,j,l)=>{
   for(let k=0;k<l;k++){let c=tao_cmp(u[i+k],v[j+k]);if(c)return c}return 0
 }
+const tao_getcc=(as,bs)=>{
+    let r=as.length,s=bs.length,c=0
+    if(r!==s){if(r<s){c=-1;bs=bs.slice(s-r)}else{c=1;as=as.slice(r-s);r=s}}
+    let l=1;while(r--){const m=as[r],n=bs[r];l*=Math.min(m,n);if(m!==n){c=m<n?-1:1;break}}
+    return(u,i,v,j)=>vec_cmp(u,i,v,j,l)||c
+}
 voc['⍋']=(y,x)=>grd(y,x,1)
 voc['⍒']=(y,x)=>grd(y,x,-1)
 const grd=(y,x,dir)=>{
-  asrt(!has(x))
-  y.isA&&y.s.length||rnkErr()
-  let r=[];for(let i=0;i<y.s[0];i++)r.push(i)
-  const l=prd(y.s.slice(1))
-  return A(r.sort((i,j)=>dir*vec_cmp(y.a,i*l,y.a,j*l,l)||(i>j)-(i<j)))
+  if(!has(x)){
+    y.isA&&y.s.length||rnkErr()
+    let r=[];for(let i=0;i<y.s[0];i++)r.push(i)
+    const l=prd(y.s.slice(1))
+    return A(r.sort((i,j)=>dir*vec_cmp(y.a,i*l,y.a,j*l,l)||(i>j)-(i<j)))
+  }else{
+    y=toA(y);let yr=y.s.length,xr;x.isA&&(xr=x.s.length)>0&&yr>=xr-1||rnkErr()
+    const rr=yr-xr+1,xc=x.s.slice(1),c=prd(xc),yc=y.s.slice(rr),d=prd(yc),s=y.s.slice(0,rr),n=prd(s)
+    for(let i=0;i<x.s[0]-1;i++)dir*vec_cmp(x.a,i*c,x.a,(i+1)*c,c)<=0||domErr()
+    if((c===0)!==(d===0))return A(rpt([(dir<0?d:c)?0:x.s[0]],n),s)
+    let r=Array(n),cmp=tao_getcc(xc,yc)
+    for(let j=0,k=0;j<y.a.length;j+=d,k++){
+      let i=-1;for(let l=x.s[0]+1,h;h=l>>1;l-=h){let m=i+h;if(dir*cmp(x.a,m*c,y.a,j)<=0)i=m}r[k]=i+1
+    }
+    return A(r,s)
+  }
 }
 voc['↕']=(y,x)=>{
   if(has(x)){
