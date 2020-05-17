@@ -543,10 +543,9 @@ const fmt=x=>{ // as array of strings
   if(t==='number'){const r=[fmtNum(x)];r.al=1;return r}
   if(t==='function')return['#procedure']
   if(!x.isA)return[''+x]
-  if(!x.a.length)return['']
-  if(!x.s.length)return fmt(x.a[0])
+  if(!x.a.length)return['[]']
   // {t:type(0=chr,1=num,2=nst),w:width,h:height,rm:rightMargin,bm:bottomMargin,al:align(0=lft,1=rgt)}
-  const nr=prd(x.s.slice(0,-1)),nc=x.s[x.s.length-1],rows=Array(nr),cols=Array(nc)
+  const nr=prd(x.s.slice(0,-1)),nc=x.s.length?x.s[x.s.length-1]:1,rows=Array(nr),cols=Array(nc)
   for(let i=0;i<nr;i++)rows[i]={h:0,bm:0};for(let i=0;i<nc;i++)cols[i]={t:0,w:0,rm:0}
   let g=Array(nr) // grid
   for(let i=0;i<nr;i++){
