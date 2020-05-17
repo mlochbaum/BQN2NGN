@@ -8,14 +8,14 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 ≡depth;match_≢shape;not match_⊣left_⊢right_⥊deshape;reshape_∾join_≍itemize;laminate
 ↑prefixes;take_↓suffixes;drop_↕range;windows_⌽reverse;rotate_⍉transpose;reorder axes
 /indices;replicate_\\partition_⊏first cell;select_⊑first;pick_⊐index of_⊒occurrence count;progressive index of
-⍋grade up;bins up_⍒grade down;bins down_∊unique mask;member of_⍷find_∪unique_⊥decode_⊤encode_⍎execute_⍕format
+⍋grade up;bins up_⍒grade down;bins down_∊unique mask;member of_⍷find_∪unique_⊔group;key_⊥decode_⊤encode_⍎execute_⍕format
 ¨each_˘cells_⁼inverse_⌜table_´reduce_⚇depth_⎉rank_⍟power operator_˜self;swap_∘atop_○over_⌾under_⊸before_⟜after
 •system;stdin/stdout_⍠combine monadic-dyadic fns_⍁identity element operator
 ¯negative_∞infinity_πpi_⍬empty numeric vector_⟨start list_⟩end list_‿strand_⦃start set_⦄end set
 ⋄statement separator_⍝comment_𝕨left argument_𝕩right argument_𝔽left operand_𝔾right operand_∇recursion
 →"return" reified as a function_↗throw`.split(/[\n_]/)
 ,bqk=           '`1234567890-=~!@#$%^&*()_+qwertyuiop[]QWERTYUIOP{}asdfghjkl;\'\\ASDFGHJKL:"|zxcvbnm,./ZXCVBNM<>?'
-,bqv=Array.from('˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒IOπ⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,''))
+,bqv=Array.from('˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒∪⊔π⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,''))
 ,tc={},bqc={} //tab completions and ` completions
 for(let i=0;i<bqk.length;i++)bqc[bqk[i]]=bqv[i]
 for(let i=0;i<tcs.length;i+=3)tc[tcs[i]+tcs[i+1]]=tcs[i+2]

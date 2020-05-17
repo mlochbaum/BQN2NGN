@@ -650,6 +650,23 @@ voc['⊐']=(y,x)=>{
   for(let i=0;i<n;i++){r[i]=m;for(let j=0;j<m;j++)if(vec_match(y.a,i*c,x.a,j*c,c)){r[i]=j;break}}
   return A(r,s)
 }
+voc['⊔']=(y,x)=>{
+  const k=has(x)?x:y
+  k.isA&&k.s.length||rnkErr()
+  let r=[],n=k.s[0],c=prd(k.s.slice(1))
+  for(let i=0,j;i<n;i++){
+    for(j=0;j<r.length;j++)if(vec_match(k.a,i*c,k.a,r[j][0]*c,c)){r[j].push(i);break}
+    if(j===r.length)r.push([i])
+  }
+  if(!has(x))return A(r.map(e=>A(e)))
+  y.isA&&y.s.length||rnkErr();y.s[0]===n||lenErr()
+  let cs=y.s.slice(1);c=prd(cs)
+  return A(r.map(a=>{
+    let r=Array(a.length*c)
+    for(let i=0;i<a.length;i++)for(let j=0;j<c;j++)r[i*c+j]=y.a[a[i]*c+j]
+    return A(r,[a.length].concat(cs))
+  }))
+}
 voc['⍟']=(g,f)=>(y,x)=>{
   typeof f==='function'||domErr()
   let n=toInt(toF(g)(y,x))
