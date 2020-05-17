@@ -573,6 +573,28 @@ const fmt=x=>{ // as array of strings
   const ws=' '.repeat(a[0].length-1);a.unshift('┌'+ws);a.push(ws+'┘')
   return a
 }
+const tao_cmp=(a,b)=>{ // like ×∘-
+  if(a.isA||b.isA){
+    const em=x=>x.isA&&x.a.length===0?1:0,ae=em(a),be=em(b);if(ae!==be)return be-ae
+    if(!a.isA)return tao_cmp(a,b.a[0])||-1;if(!b.isA)return tao_cmp(a.a[0],b)||1
+    let as=a.s,bs=b.s,r=as.length,s=bs.length,c=0
+    if(r!==s){if(r<s){c=-1;bs=bs.slice(s-r)}else{c=1;as=as.slice(r-s);r=s}}
+    let l=1;while(r--){const m=as[r],n=bs[r];l*=Math.min(m,n);if(m!==n){c=m<n?-1:1;break}}
+    return vec_cmp(a.a,0,b.a,0,l)||c
+  }else{
+    const ta=typeof a,tb=typeof b
+    ta==='function'||tb==='function'&&domErr()
+    const ca=ta==='string'?1:0,cb=tb==='string'?1:0
+    if(ca!==cb)return ca-cb
+    if(ca||(ta==='number'&&tb==='number'))return a!==b?(a<b?-1:1):0
+    a=Zify(a);b=Zify(b)
+    return a.re!==b.re?(a.re<b.re?-1:1):
+           a.im!==b.im?(a.im<b.im?-1:1):0
+  }
+}
+const vec_cmp=(u,i,v,j,l)=>{
+  for(let k=0;k<l;k++){let c=tao_cmp(u[i+k],v[j+k]);if(c)return c}return 0
+}
 voc['⍋']=(y,x)=>grd(y,x,1)
 voc['⍒']=(y,x)=>grd(y,x,-1)
 const grd=(y,x,dir)=>{
@@ -580,16 +602,7 @@ const grd=(y,x,dir)=>{
   y.isA&&y.s.length||rnkErr()
   let r=[];for(let i=0;i<y.s[0];i++)r.push(i)
   const l=prd(y.s.slice(1))
-  return A(r.sort((i,j)=>{
-    let p=0,ind=rpt([0],y.s.length)
-    for(let p=0;p<l;p++){
-      let u=y.a[i*l+p],ku=typeof u
-      let v=y.a[j*l+p],kv=typeof v
-      if(ku!==kv)return dir*(1-2*(ku<kv))
-      if(u!==v)return dir*(1-2*(u<v))
-    }
-    return(i>j)-(i<j)
-  }))
+  return A(r.sort((i,j)=>dir*vec_cmp(y.a,i*l,y.a,j*l,l)||(i>j)-(i<j)))
 }
 voc['↕']=(y,x)=>{
   if(has(x)){
