@@ -913,6 +913,7 @@ voc['√'].inverse=withId(1,perv(
 ))
 voc['⊢'].inverse=(y,x)=>y
 voc['⊣'].inverse=(y,x)=>has(x)?domErr():y
+voc['<'].inverse=(y,x)=>has(x)||!y.isA||y.s.length?domErr():y.a[0]
 voc['⌽'].inverse=(y,x)=>voc['⌽'](y,has(x)?voc['-'](x):undefined)
 voc['⍉'].inverse=(y,x)=>voc['⍉'](y,x,1)
 
