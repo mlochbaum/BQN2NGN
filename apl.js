@@ -699,23 +699,21 @@ voc['⥊']=(y,x)=>{
   }
 }
 voc['⌽']=(y,x)=>{
-  y.isA&&y.s.length||rnkErr()
   if(has(x)){
-    let step=unw(x)
-    isInt(step)||domErr()
-    if(!step)return y
-    let n=y.s[0]
-    step=(n+step%n)%n // force % to handle negatives properly
-    if(!y.a.length||!step)return y
-    let r=[],d=strides(y.s),p=0,i=rpt([0],y.s.length)
-    while(1){
-      r.push(y.a[p+((i[0]+step)%y.s[0]-i[0])*d[0]])
-      let a=y.s.length-1;while(a>=0&&i[a]+1===y.s[a]){p-=i[a]*d[a];i[a--]=0}
-      if(a<0)break
-      i[a]++;p+=d[a]
+    let v=getVec(x).slice();v.length<=(y.isA?y.s.length:0)||rnkErr()
+    const mod=(s,n)=>{let m=s%n;return m<0?m+n:m}
+    let l=0;for(let i=0;i<v.length;i++){isInt(v[i])||domErr();if(v[i]=mod(v[i],y.s[i]))l=i+1}
+    if(!l||!y.a.length)return y;v=v.slice(0,l)
+    let c=prd(y.s.slice(v.length)),d=Array(v.length),n=c,p=0
+    for(let a=v.length;a--;){d[a]=n;p+=n*v[a];n*=y.s[a];v[a]=y.s[a]-v[a]-1}
+    let r=Array(n),i=rpt([0],d.length)
+    for(let j=0;j<n;j+=c){
+      for(let k=0;k<c;k++)r[j+k]=y.a[p+k]
+      for(let a=i.length;a--;){p+=d[a];if(i[a]===v[a])p-=y.s[a]*d[a];if(++i[a]===y.s[a])i[a]=0;else break}
     }
     return A(r,y.s)
   }else{
+    y.isA&&y.s.length||rnkErr()
     const nj=y.s[0],nk=prd(y.s.slice(1)),r=Array(nj*nk)
     for(let j=0;j<nj;j++)for(let k=0;k<nk;k++)r[j*nk+k]=y.a[(nj-1-j)*nk+k]
     return A(r,y.s)
