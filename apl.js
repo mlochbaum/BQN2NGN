@@ -979,11 +979,12 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
               i++
             }
           }
-          if(h.length>1&&h[h.length-1]===VRB){a=[['T'].concat(a)];h=[VRB]} // trains
+          if(h.length>1&&h[h.length-1]===VRB){for(i=h.length-2;i>0;i-=2)h[i]===VRB||synErrAt(a[i]);a=[['T'].concat(a)];h=[VRB]} // trains
           if(h[h.length-1]!==NOUN){
             if(h.length>1)synErrAt(a[h.length-1])
           }else{
             while(h.length>1){ // monadic and dyadic verbs
+              if(h[h.length-2]!==VRB)synErrAt(a[h.length-2])
               if(h.length===2||h[h.length-3]!==NOUN){a.splice(-2,9e9,['M'].concat(a.slice(-2)));h.splice(-2,9e9,NOUN)}
               else                                  {a.splice(-3,9e9,['D'].concat(a.slice(-3)));h.splice(-3,9e9,NOUN)}
             }
