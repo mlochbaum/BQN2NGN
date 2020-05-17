@@ -233,15 +233,14 @@ const voc={}
 ,numeric=(f,g)=>(x,y,h)=>(typeof x!=='number'||y!=null&&typeof y!=='number'?g(Zify(x),y==null?y:Zify(y),h):f(x,y,h))
 ,match=(x,y)=>{
   if(x.isA){
-    if(!y.isA||x.s!=''+y.s)return 0
-    let r=1,n=x.a.length;for(let i=0;i<n;i++)r&=match(x.a[i],y.a[i])
-    return r
+    return y.isA&&x.s==''+y.s&&vec_match(x.a,0,y.a,0,x.a.length)?1:0
   }else{
     if(y.isA)return 0
-    if(x instanceof Z&&y instanceof Z)return x.re===y.re&&x.im===y.im
-    return x===y
+    if(x instanceof Z&&y instanceof Z)return x.re===y.re&&x.im===y.im?1:0
+    return x===y?1:0
   }
 }
+,vec_match=(u,i,v,j,l)=>{for(let k=0;k<l;k++)if(!match(u[i+k],v[j+k]))return 0;return 1}
 ,nAprx=(x,y)=>x===y||Math.abs(x-y)<1e-11 // approximate equality for numbers
 ,aprx=(x,y)=>{ // like match(), but approximate
   if(x.isA){
@@ -308,7 +307,7 @@ voc['<']=withId(0,(y,x)=>has(x)?perv(null,real((x,y)=>+(x< y)))(y,x):A.scal(y))
 voc['>']=withId(0,(y,x)=>has(x)?perv(null,real((x,y)=>+(x> y)))(y,x):mix(y))
 voc['≤']=withId(1,perv(null,real((x,y)=>+(x<=y))))
 voc['≥']=withId(1,perv(null,real((x,y)=>+(x>=y))))
-voc['≡']=(y,x)=>has(x)? +match(y,x):depth(y)
+voc['≡']=(y,x)=>has(x)?  match(y,x):depth(y)
 voc['≢']=(y,x)=>has(x)?1-match(y,x):A(new Float64Array(y.s))
 const depth=x=>{if(!x.isA)return 0
                 let r=0,n=x.a.length;for(let i=0;i<n;i++)r=Math.max(r,depth(x.a[i]));return r+1}
@@ -520,7 +519,7 @@ voc['⍷']=(y,x)=>{
   while(1){
     let q=p;r[q]=1;j.fill(0)
     for(let k=0;k<nk;k++){
-      r[p]&=+match(x.a[k],y.a[q])
+      r[p]&=match(x.a[k],y.a[q])
       let a=s.length-1;while(a>=0&&j[a]+1===x.s[a]){q-=j[a]*d[a];j[a--]=0}
       if(a<0)break
       q+=d[a];j[a]++
@@ -642,10 +641,13 @@ voc['↕']=(y,x)=>{
   }
 }
 voc['⊐']=(y,x)=>{
-  asrt(x);y.isA||domErr();x.isA&&x.s.length===1||rnkErr()
-  const m=x.a.length,n=y.a.length,r=new Float64Array(n)
-  for(let i=0;i<n;i++){r[i]=x.s[0];for(let j=0;j<m;j++)if(match(y.a[i],x.a[j])){r[i]=j;break}}
-  return A(r,y.s)
+  has(x)||synErr()
+  y.isA||domErr();let yr=y.s.length,xr;x.isA&&(xr=x.s.length)>0&&yr>=xr-1||rnkErr()
+  const rr=yr-xr+1,xc=x.s.slice(1),c=prd(xc),yc=y.s.slice(rr),s=y.s.slice(0,rr),n=prd(s)
+  for(let i=0;i<xr-1;i++)if(xc[i]!==yc[i])return A(rpt([x.s[0]],n),s)
+  const m=x.s[0],r=new Float64Array(n)
+  for(let i=0;i<n;i++){r[i]=m;for(let j=0;j<m;j++)if(vec_match(y.a,i*c,x.a,j*c,c)){r[i]=j;break}}
+  return A(r,s)
 }
 voc['⍟']=(g,f)=>(y,x)=>{
   typeof f==='function'||domErr()
@@ -783,7 +785,7 @@ voc['/'].inverse=(y,x)=>{
       else{
         const e=m+c*u
         for(let k=0;k<c;k++)r[i*c+k]=y.a[m+k];m+=c
-        for(;m<e;m+=c)for(let k=0;k<c;k++)match(r[i*c+k],y.a[m+k])||domErr()
+        for(;m<e;m+=c)vec_match(r,i*c,y.a,m,c)||domErr()
       }
     }
     return A(r,[l].concat(y.s.slice(1)))
