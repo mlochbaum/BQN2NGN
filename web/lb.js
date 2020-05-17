@@ -7,8 +7,8 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 =equals_≠count;not equals_≤lesser or equal to_<box;less than_>unbox;greater than_≥greater or equal to
 ≡depth;match_≢shape;not match_⊣left_⊢right_⥊deshape;reshape_∾join_≍itemize;laminate
 ↑prefixes;take_↓suffixes;drop_↕range;windows_⌽reverse;rotate_⍉transpose;reorder axes
-/indices;replicate_\\partition_⊏first cell;select_⊑first;pick_⊐index of_⊒progressive index of
-⍋grade up;bins up_⍒grade down;bins down_∊flatten;member of_⍷find_∪unique_⊥decode_⊤encode_⍎execute_⍕format
+/indices;replicate_\\partition_⊏first cell;select_⊑first;pick_⊐index of_⊒occurrence count;progressive index of
+⍋grade up;bins up_⍒grade down;bins down_∊unique mask;member of_⍷find_∪unique_⊥decode_⊤encode_⍎execute_⍕format
 ¨each_˘cells_⁼inverse_⌜table_´reduce_⚇depth_⎉rank_⍟power operator_˜self;swap_∘atop_○over_⌾under_⊸before_⟜after
 •system;stdin/stdout_⍠combine monadic-dyadic fns_⍁identity element operator
 ¯negative_∞infinity_πpi_⍬empty numeric vector_⟨start list_⟩end list_‿strand_⦃start set_⦄end set
