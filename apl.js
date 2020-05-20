@@ -218,11 +218,11 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
       }
       if(x.length===2)x=x[1];else c=NOUN
       let t=a[i].t;if('←↩'.includes(t)){
-        i++;let e=expr();c=e[1]
+        i++;let e=expr(),f;if(t==='↩'&&c===VRB&&e[1]===NOUN&&r.length){f=x;x=r.pop();h.pop()};c=e[1]
         const chkX=x=>x[0]==='X'&&x[1]!=='∇'&&x[1]!=='→'&&x[2]===c||prsErr(x),
         chk=c!==NOUN?chkX:(x=>{if(x[0]==='V')for(let i=1;i<x.length;i++)chk(x[i]);else chkX(x)})
         chk(x)
-        x=[t,x,e[0]]
+        x=[t,x,e[0],f]
       }
       r.push(x);h.push(c);if(')}⟩:;⋄$'.includes(a[i].t))return parseExpr(r,h)
     }
@@ -993,7 +993,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       x.scp=scp
       switch(x[0]){default:asrt(0)
         case':':vst(x[1]);vst(x[2]);break
-        case'←':case'↩':vst(x[2]);vstLHS(x[1],x[0]==='←');break
+        case'←':case'↩':vst(x[2]);if(x[3])vst(x[3]);vstLHS(x[1],x[0]==='←');break
         case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
         case'S':case'N':case'J':break
         case'V':case'M':case'D':case'A':case'C':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
@@ -1025,7 +1025,8 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              const a=[];for(let i=1;i<x.length;i++){a.push.apply(a,rndr(x[i]));a.push(POP)}
              a[a.length-1]=RET;return a}
     case':':{const r=rndr(x[1]),y=rndr(x[2]);return r.concat(JEQ,y.length+2,POP,y,RET)}
-    case'←':case'↩':return rndr(x[2]).concat(rndrLHS(x[1]))
+    case'↩':if(x[3])return rndr(x[2]).concat(rndr(x[3]),rndr(x[1]),DYA).concat(rndrLHS(x[1])) // modified
+    case'←':return rndr(x[2]).concat(rndrLHS(x[1]))
     case'X':{const s=x[1],vars=x.scp.v,v=vars['get_'+s]
              return s==='→'?[CON]:v?[LDC,0,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
