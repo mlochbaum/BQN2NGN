@@ -2,7 +2,7 @@
 let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"]/g,c=>hc[c]) //html chars and escape fn
 ,tcs='<-←xx×:-÷*o⍟[-⌹oo○ff⌈FF⌈ll⌊LL⌊tt⊥TT⊤-|⊣|-⊢~~≈=/≠<=≤>=≥==≡=-≢vv∨^^∧^~⍲v~⍱^|↑v|↓<<⊂>>⊃[|⌷A|⍋V|⍒ii⍳ee∊e-⍷'+
 'uu∪nn∩/-⌿\\-⍀,-⍪rr⍴pp⍴o|⌽o-⊖o\\⍉..¨~:⍨*:⍣o.∘[\'⍞[]⎕[:⍠[=⌸ot⍎oT⍕<>⋄on⍝aa⍺ww⍵a-⍶w-⍹VV∇--¯88∞0~⍬V~⍫//↗[/⍁'
-,lbs=`←assign_+conjugate;add_-negate;subtract_×signum;multiply_÷reciprocal;divide_⋆exp;power_√sqrt;root
+,lbs=`←define_↩modify_+conjugate;add_-negate;subtract_×signum;multiply_÷reciprocal;divide_⋆exp;power_√sqrt;root
 ∨or_∧and_¬not;span_⌈ceiling;max_⌊floor;min_|magnitude;residue_!factorial;binomial_?roll;deal
 =equals_≠count;not equals_≤lesser or equal to_<box;less than_>unbox;greater than_≥greater or equal to
 ≡depth;match_≢shape;not match_⊣left_⊢right_⥊deshape;reshape_∾join_≍itemize;laminate
@@ -15,7 +15,7 @@ let hc={'<':'&lt;','&':'&amp;',"'":'&apos;','"':'&quot;'},he=x=>x.replace(/[<&'"
 ⋄statement separator_⍝comment_𝕨left argument_𝕩right argument_𝔽left operand_𝔾right operand_∇recursion
 →"return" reified as a function_↗throw`.split(/[\n_]/)
 ,bqk=           '`1234567890-=~!@#$%^&*()_+qwertyuiop[]QWERTYUIOP{}asdfghjkl;\'\\ASDFGHJKL:"|zxcvbnm,./ZXCVBNM<>?'
-,bqv=Array.from('˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒∪⊔π⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝⌾  ASD𝔽𝔾HJKL:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,''))
+,bqv=Array.from('˜¨˘⁼⌜´•¯∞∨∧÷×¬⚇⎉⍟$%^&*⟨⟩√⋆⌽𝕨∊⊏⊐↑↓↕⊣⊢←→Q𝕎⍷⊑⊒⍋⍒∪⊔π⦃⦄⍉⌈⌊𝕗𝕘⊸∘○⟜⋄⍝↩  ASD𝔽𝔾HJ⌾L:"|⥊𝕩⊂⊃⊥⊤≡∾≍‿Z𝕏⊆⊇⍎⍕≢≤≥≠'.replace(/ /g,''))
 ,tc={},bqc={} //tab completions and ` completions
 for(let i=0;i<bqk.length;i++)bqc[bqk[i]]=bqv[i]
 for(let i=0;i<tcs.length;i+=3)tc[tcs[i]+tcs[i+1]]=tcs[i+2]

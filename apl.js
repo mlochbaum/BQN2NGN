@@ -5,13 +5,13 @@ const prelude=`
 ⍬←⟨⟩ ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ⌾←{𝔾⁼∘𝔽○𝔾}
 ¬←(1+-)⍁1
-⊏←⊣´⍠⊏
+⊏↩⊣´⍠⊏
 ↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
-↑←((↕1+≠)↑¨<)⍠↑
-↓←((↕1+≠)↓¨<)⍠↓
+↑↩((↕1+≠)↑¨<)⍠↑
+↓↩((↕1+≠)↓¨<)⍠↓
 ∊←(⊐˜=↕∘≢)⍠(⊐˜≠≠∘⊢)
-∧←⍋⊸⊏⍠∧⍁1
-∨←⍒⊸⊏⍠∨⍁0
+∧↩⍋⊸⊏⍠∧⍁1
+∨↩⍒⊸⊏⍠∨⍁0
 ∪←0⊸↑(⊣∾¬∘∊˜/≍∘⊢)˜´⌽
 ⊒←(⊐˜(⊢-⊏)⍋∘⍋)⍠{𝕨⊐○(∾˘⟜⊒𝕨⊸⊐)𝕩}
 `
@@ -166,7 +166,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
-     ['.',/^[\(\){\}⟨⟩‿:;←]/],            // punctuation
+     ['.',/^[\(\){\}⟨⟩‿:;←↩]/],            // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
      ['J',/^«[^»]*»/],                    // JS literal
      ['X',/^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])/]] // identifier
@@ -208,7 +208,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
     while(1){
       let x=obj()
       if(a[i].t==='‿'){x=['V',x];do{i++;x.push(obj())}while(a[i].t==='‿')}
-      if(a[i].t==='←'){i++;return r.concat([['←',x,expr()]])}
+      if('←↩'.includes(a[i].t)){let t=a[i].t;i++;return r.concat([[t,x,expr()]])}
       r.push(x);if(')]}⟩:;⋄$'.includes(a[i].t))return r
     }
   }
@@ -953,7 +953,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   }
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
   const gl=x=>{switch(x[0]){default:asrt(0) // categorise lambdas
-    case'B':case':':case'←':case'{':case'.':case'V':
+    case'B':case':':case'←':case'↩':case'{':case'.':case'V':
       let r=0;for(let i=1;i<x.length;i++)if(x[i])r|=gl(x[i])
       if(x[0]==='{'){x.g=r;return 0}else{return r}
     case'S':case'N':case'J':return 0
@@ -967,7 +967,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       x.scp=scp
       switch(x[0]){default:asrt(0)
         case':':{const r=vst(x[1]);vst(x[2]);return r}
-        case'←':return vstLHS(x[1],vst(x[2]))
+        case'←':case'↩':return vstLHS(x[1],vst(x[2]),x[0]==='←')
         case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode})
         case'S':case'N':case'J':return x[2]
         case'{':{
@@ -1011,13 +1011,13 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
         }
       }
     }
-    ,vstLHS=(x,rg)=>{ // rg:right-hand side grammatical category
+    ,vstLHS=(x,rg,d)=>{ // rg:right-hand side grammatical category, d:declaration
       x.scp=scp
       switch(x[0]){default:asrt(0)
-        case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x)
-                x[2]===rg||synErrAt(x);if(!scp.v[s]){scp.v[s]={d:scp.d,i:scp.n++}};break
-        case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg);break
-        case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg);break
+        case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x);x[2]===rg||synErrAt(x)
+                if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
+        case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg,d);break
+        case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg,d);break
       }
       return rg
     }
@@ -1028,7 +1028,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              const a=[];for(let i=1;i<x.length;i++){a.push.apply(a,rndr(x[i]));a.push(POP)}
              a[a.length-1]=RET;return a}
     case':':{const r=rndr(x[1]),y=rndr(x[2]);return r.concat(JEQ,y.length+2,POP,y,RET)}
-    case'←':return rndr(x[2]).concat(rndrLHS(x[1]))
+    case'←':case'↩':return rndr(x[2]).concat(rndrLHS(x[1]))
     case'X':{const s=x[1],vars=x.scp.v,v=vars['get_'+s]
              return s==='→'?[CON]:v?[LDC,0,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
