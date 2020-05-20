@@ -166,20 +166,18 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
-     ['.',/^[\(\){\}⟨⟩‿:;←↩]/],            // punctuation
+     ['.',/^[\(\){\}⟨⟩‿:;←↩]/],           // punctuation
      ['⋄',/^[⋄\n,]/],                     // separator
      ['J',/^«[^»]*»/],                    // JS literal
      ['X',/^(?:•?[_A-Za-z][_A-Za-z0-9]*|𝕗|𝕘|𝕨|𝕩|𝔽|𝔾|𝕎|𝕏|∇∇|[^¯\'":«»])/]] // identifier
 ,prs=(s,o)=>{
-  // tokens are {t:type,v:value,o:offset,s:aplCode}
-  // "stk" tracks bracket nesting and causes '\n' tokens to be dropped when the latest unclosed bracket is '(' or '['
-  let i=0,a=[],stk=['{'],l=s.length // i:offset in s, a:tokens
+  // tokens are {t:type,v:value,c:syntactic class,o:offset,s:aplCode}
+  let i=0,a=[],l=s.length // i:offset in s, a:tokens
   while(i<l){
     let m,t,v,c=0,o=i,r=s.slice(i)
     for(let j=0;j<td.length;j++)if(m=r.match(td[j][1])){v=m[0];t=td[j][0];t==='.'&&(t=v);break}
     t||synErr({file:o?o.file:null,o:i,s:s})
     i+=v.length
-    '([{⟨'.includes(t)?stk.push(t):')]}⟩'.includes(t)?stk.pop():0
     if('NSJ'.includes(t))c=NOUN
     if(t==='X'){
       if(v[0]==='_'){c=ADV;let e=v.length-1;if(v[e]==='_')c=CNJ;else e++;v=v.slice(1,e).toLowerCase()}
@@ -189,39 +187,75 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
     if(t!=='-')a.push({t,v,c,o,s}) // t:type, v:value, c:syntactic class, o:offset
   }
   a.push({t:'$',v:'',c:0,o:i,s})
-  // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '{' {}  '←' a←b  '.' a b
-  // '.' gets replaced with: 'V' 1 2  'M' +1  'D' 1+2  'A' +/  'C' +.×  'T' +÷
+  // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '{' {}  '←' a←b  '↩' a↩b
+  //                 'V' 1‿2  'M' +1  'D' 1+2  'A' +´  'C' +⎉2  'T' +÷
   i=0 // offset in a
+  let fstk=[] // function stack for argument/operand tracking
   const dmnd=x=>a[i].t===x?i++:prsErr()
-  ,prsErr=x=>synErr({file:o.file,offset:a[i].o,aplCode:s})
+  ,prsErr=x=>synErr({file:o.file,offset:has(x)?x.offset:a[i].o,aplCode:s})
   ,body=_=>{
     let r=['B']
     while(1){
       while(a[i].t==='⋄')i++
       if('$};'.includes(a[i].t))return r
-      let e=expr();if(a[i].t===':'){i++;e=[':',e,expr()]}
+      let e=expr()[0];if(a[i].t===':'){i++;e=[':',e,expr()[0]]}
       r.push(e)
     }
   }
   ,expr=_=>{
-    let r=['.']
+    const argt=s=>/^(𝕗|𝔽|∇∇)$/.test(s)?1<<ADV:/^(𝕘|𝔾)$/.test(s)?1<<CNJ:/^(𝕨|𝕩|𝕎|𝕏)$/.test(s)?1<<VRB:0
+    let r=[],h=[] // components and their syntactic classes
     while(1){
-      let x=obj()
-      if(a[i].t==='‿'){x=['V',x];do{i++;x.push(obj())}while(a[i].t==='‿')}
-      if('←↩'.includes(a[i].t)){let t=a[i].t;i++;return r.concat([[t,x,expr()]])}
-      r.push(x);if(')]}⟩:;⋄$'.includes(a[i].t))return r
+      let x=['V'],c=0;while(1){
+        let o,n=a[i++]
+        if('NSXJ'.includes(n.t)){o=[n.t,n.v,c=n.c];let k;if(n.t==='X'&&(k=argt(n.v))){fstk.length||prsErr();fstk[fstk.length-1].g|=k}}
+        else if(n.t==='('){let e=expr();dmnd(')');o=e[0];c=e[1]}
+        else if(n.t==='{'){fstk.push(o=['{']);o.g=0;o.push(body());if(a[i].t===';'){i++;o.push(body())}dmnd('}');fstk.pop();c=o.g&(1<<CNJ)?CNJ:o.g&(1<<ADV)?ADV:VRB}
+        else if(n.t==='⟨'){o=['V'];while(1){while(a[i].t==='⋄')i++;if('$⟩'.includes(a[i].t))break;o.push(expr()[0])}dmnd('⟩');c=NOUN}
+        else{i--;prsErr()}
+        x.push(o)
+        if(a[i].t!=='‿')break;i++
+      }
+      if(x.length===2)x=x[1];else c=NOUN
+      let t=a[i].t;if('←↩'.includes(t)){
+        i++;let e=expr();c=e[1]
+        const chkX=x=>x[0]==='X'&&x[1]!=='∇'&&x[1]!=='→'&&x[2]===c||prsErr(x),
+        chk=c!==NOUN?chkX:(x=>{if(x[0]==='V')for(let i=1;i<x.length;i++)chk(x[i]);else chkX(x)})
+        chk(x)
+        x=[t,x,e[0]]
+      }
+      r.push(x);h.push(c);if(')}⟩:;⋄$'.includes(a[i].t))return parseExpr(r,h)
     }
   }
-  ,obj=_=>{
-    let x,n=a[i++]
-    if('NSXJ'.includes(n.t))x=[n.t,n.v,n.c]
-    else if(n.t==='('){x=expr();dmnd(')')}
-    else if(n.t==='{'){x=['{',body()];if(a[i].t===';'){i++;x.push(body())}dmnd('}')}
-    else if(n.t==='⟨'){x=['V'];while(1){while(a[i].t==='⋄')i++;if('$⟩'.includes(a[i].t))break;x.push(expr())}dmnd('⟩')}
-    else{i--;prsErr()}
-    return x
+  ,parseExpr=(a,h)=>{
+    for(let i=0;i<a.length;){ // adverbs and conjunctions
+      const rand=c=>c===NOUN||c===VRB
+      if(rand(h[i])&&i+1<a.length&&h[i+1]===ADV){
+        a.splice(i,2,['A'].concat(a.slice(i,i+2)));h.splice(i,2,VRB)
+      }else if(rand(h[i])&&i+2<a.length&&h[i+1]===CNJ&&rand(h[i+2])){
+        a.splice(i,3,['C'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
+      }else{
+        i++
+      }
+    }
+    if(h.length===1){ // single object
+      return[a[0],h[0]]
+    }else if(h[h.length-1]===VRB){ // trains
+      for(let i=h.length-2;i>0;i-=2)h[i]===VRB||prsErr(a[i])
+      return[['T'].concat(a),VRB]
+    }else if(h[h.length-1]===NOUN){ // monadic and dyadic verbs
+      let n=a[a.length-1]
+      for(let i=a.length-2;i>=0;i--){
+        h[i]===VRB||prsErr(a[i])
+        let e=i,d=+(i>0&&h[i-1]===NOUN);i-=d
+        n=[d?'D':'M'].concat(a.slice(i,e+1),[n])
+      }
+      return[n,NOUN]
+    }else{
+      prsErr(a[h.length-1])
+    }
   }
-  return[body(),dmnd('$')][0]
+  let b=body();dmnd('$');return b
 }
 const voc={}
 ,retNum=r=>{typeof r==='number'&&r!==r&&domErr();return r}
@@ -952,24 +986,17 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     const u=o.ctx[key],v=ast.v[key]={i:ast.n++,d:ast.d}
   }
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
-  const gl=x=>{switch(x[0]){default:asrt(0) // categorise lambdas
-    case'B':case':':case'←':case'↩':case'{':case'.':case'V':
-      let r=0;for(let i=1;i<x.length;i++)if(x[i])r|=gl(x[i])
-      if(x[0]==='{'){x.g=r;return 0}else{return r}
-    case'S':case'N':case'J':return 0
-    case'X':{const s=x[1];return/^(𝕗|𝔽|∇∇)$/.test(s)?1<<ADV:/^(𝕘|𝔾)$/.test(s)?1<<CNJ:/^(𝕨|𝕩|𝕎|𝕏)$/.test(s)?1<<VRB:0}
-  }}
-  gl(ast)
   const q=[ast] // queue for "body" nodes
   while(q.length){
     const scp=q.shift() // scp:scope node
     ,vst=x=>{
       x.scp=scp
       switch(x[0]){default:asrt(0)
-        case':':{const r=vst(x[1]);vst(x[2]);return r}
-        case'←':case'↩':return vstLHS(x[1],vst(x[2]),x[0]==='←')
-        case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode})
-        case'S':case'N':case'J':return x[2]
+        case':':vst(x[1]);vst(x[2]);break
+        case'←':case'↩':vst(x[2]);vstLHS(x[1],x[0]==='←');break
+        case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
+        case'S':case'N':case'J':break
+        case'V':case'M':case'D':case'A':case'C':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
         case'{':{
           const c=x.g&(1<<CNJ)?1:0,o=c||(x.g&(1<<ADV))?1:0
           for(let i=1;i<x.length;i++){
@@ -980,46 +1007,16 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
             q.push(extend(x[i],{scp,d,n:4,v}))
             if(o){if(c)arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2*c,d-1)}
           }
-          return !o?VRB:c?CNJ:ADV
-        }
-        case'V':{for(let i=1;i<x.length;i++)vst(x[i]);return NOUN}
-        case'.':{
-          let a=x.slice(1),h=Array(a.length);for(let i=a.length-1;i>=0;i--)h[i]=vst(a[i])
-          // adverbs and conjunctions
-          let i=0
-          while(i<a.length){
-            const rand=c=>c===NOUN||c===VRB
-            if(rand(h[i])&&i+1<a.length&&h[i+1]===ADV){
-              a.splice(i,2,['A'].concat(a.slice(i,i+2)));h.splice(i,2,VRB)
-            }else if(rand(h[i])&&i+2<a.length&&h[i+1]===CNJ&&rand(h[i+2])){
-              a.splice(i,3,['C'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
-            }else{
-              i++
-            }
-          }
-          if(h.length>1&&h[h.length-1]===VRB){for(i=h.length-2;i>0;i-=2)h[i]===VRB||synErrAt(a[i]);a=[['T'].concat(a)];h=[VRB]} // trains
-          if(h[h.length-1]!==NOUN){
-            if(h.length>1)synErrAt(a[h.length-1])
-          }else{
-            while(h.length>1){ // monadic and dyadic verbs
-              if(h[h.length-2]!==VRB)synErrAt(a[h.length-2])
-              if(h.length===2||h[h.length-3]!==NOUN){a.splice(-2,9e9,['M'].concat(a.slice(-2)));h.splice(-2,9e9,NOUN)}
-              else                                  {a.splice(-3,9e9,['D'].concat(a.slice(-3)));h.splice(-3,9e9,NOUN)}
-            }
-          }
-          x.splice(0,9e9,a[0]);extend(x,a[0]);return h[0]
+          break
         }
       }
     }
-    ,vstLHS=(x,rg,d)=>{ // rg:right-hand side grammatical category, d:declaration
+    ,vstLHS=(x,d)=>{ // d:declaration
       x.scp=scp
       switch(x[0]){default:asrt(0)
-        case'X':const s=x[1];if(s==='∇'||s==='→')synErrAt(x);x[2]===rg||synErrAt(x)
-                if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
-        case'.':rg===NOUN&&x.length===2||synErrAt(x);vstLHS(x[1],rg,d);break
-        case'V':rg===NOUN||synErrAt(x);for(let i=1;i<x.length;i++)vstLHS(x[i],rg,d);break
+        case'X':const s=x[1];if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
+        case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d);break
       }
-      return rg
     }
     for(let i=1;i<scp.length;i++)vst(scp[i])
   }
@@ -1054,7 +1051,6 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
   }}
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
-    case'.':return rndrLHS(x[1])
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
   }}
   return rndr(ast)
