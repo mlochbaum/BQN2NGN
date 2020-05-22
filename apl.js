@@ -404,6 +404,39 @@ voc['∾']=(y,x)=>{
              c<0?[2]:[(o?x.s[0]:1)+(p?y.s[0]:1)].concat(x.s.slice(o)))
   }
 }
+voc['\\']=(y,x)=>{
+  has(x)||synErr()
+  x.isA&&y.isA||domErr();y.s.length||rnkErr()
+  let a=getVec(x)
+  if(a.length&&a[0].isA){
+    for(let i=0;i<a.length;i++){a[i].isA&&a[i].s.length===1||rnkErr();a[i]=a[i].a}
+  }else{
+    a=[a]
+  }
+  const f=a.length,c=y.s.length;f<=c||rnkErr()
+  let dim=Array(f)
+  for(let i=0;i<f;i++){
+    const u=a[i];u.length<=y.s[i]+1||lenErr()
+    let d=[],m=0;for(let j=0;j<u.length;j++,m++){
+      isInt(u[j],0)||domErr()
+      if(u[j]){d.push(m);for(let k=0;k<u[j]-1;k++)d.push(0);m=0}
+    }
+    d.push(y.s[i]-u.length+m);dim[i]=d
+  }
+  const rs=dim.map(d=>d.length),m=prd(rs),st=y.s.slice(f),l=prd(st)
+  let rd=Array(f);for(let a=f,n=l;a--;){rd[a]=n;n*=y.s[a]}
+  let r=Array(m),i=rs.map(_=>0)
+  for(let ri=0,y0=0;ri<m;ri++){
+    let es=dim.map((d,j)=>d[i[j]]).concat(st),e=r[ri]=A(Array(prd(es)),es)
+    let j=rs.map(_=>0)
+    for(let ei=0,y1=y0;ei<e.a.length;ei+=l){
+      for(let ci=0;ci<l;ci++)e.a[ei+ci]=y.a[y1+ci]
+      for(let a=f;a--;){y1+=rd[a];if(++j[a]===es[a]){y1-=j[a]*rd[a];j[a]=0}else{break}}
+    }
+    for(let a=f;a--;){y0+=rd[a]*es[a];if(++i[a]===rs[a]){y0-=y.s[a]*rd[a];i[a]=0}else{break}}
+  }
+  return A(r,rs)
+}
 voc['⊢']=(y,x)=>y
 voc['⊣']=(y,x)=>has(x)?x:y
 voc['˜']=f=>(y,x)=>toF(f)(has(x)?x:y,y)
