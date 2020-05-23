@@ -163,6 +163,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
   case CON:{let frm=h[h.length-1],cont={b,h:h.map(x=>x.slice()),t:t.slice(0,frm[3]),p:frm[1].p+frm[1].size-1}
             asrt(b[cont.p]===RET);t.push(r=>{b=cont.b;h=cont.h;t=cont.t;p=cont.p;t.push(r)});break}
 }}
+const NOUN=1,VRB=2,ADV=3,CNJ=4
 ,td=[['-',/^ +|^[⍝#].*/],                 // whitespace or comment
      ['N',/^¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞)(?:j¯?(?:\d*\.?\d+(?:e[+¯]?\d+)?|∞))?/i], // number
      ['S',/^(?:'[^']*')+|^(?:"[^"]*")+/], // string
@@ -1001,8 +1002,7 @@ voc['<'].inverse=(y,x)=>has(x)||!y.isA||y.s.length?domErr():y.a[0]
 voc['⌽'].inverse=(y,x)=>voc['⌽'](y,has(x)?voc['-'](x):undefined)
 voc['⍉'].inverse=(y,x)=>voc['⍉'](y,x,1)
 
-const NOUN=1,VRB=2,ADV=3,CNJ=4
-,exec=(s,o={})=>{
+const exec=(s,o={})=>{
   const t=prs(s,o),b=compile(t,o),e=[preludeData.env[0].slice()] // t:ast,b:bytecode,e:env
   for(let k in t.v)e[0][t.v[k].i]=o.ctx[k]
   const r=vm(b,e)
