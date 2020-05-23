@@ -699,13 +699,13 @@ voc['↕']=(y,x)=>{
     }
     return A(r,s)
   }else{
-    let a=getVec(y);for(let i=0;i<a.length;i++)isInt(a[i],0)||domErr()
+    let a=y.isA?(y.s.length===1||rnkErr(),y.a):[y];for(let i=0;i<a.length;i++)isInt(a[i],0)||domErr()
     let n=prd(a),m=a.length,r=new Float64Array(n*m),p=1,q=n
     for(let i=0;i<m;i++){
       let ai=a[i],u=i-m;q/=a[i];for(let j=0;j<p;j++)for(let k=0;k<ai;k++)for(let l=0;l<q;l++)r[u+=m]=k
       p*=ai
     }
-    if(m===1){return A(r,a)}else{let r1=Array(n);for(let i=0;i<n;i++)r1[i]=A(r.slice(m*i,m*i+m));return A(r1,a)}
+    if(!y.isA){return A(r,a)}else{let r1=Array(n);for(let i=0;i<n;i++)r1[i]=A(r.slice(m*i,m*i+m));return A(r1,a)}
   }
 }
 voc['⊐']=(y,x)=>{
