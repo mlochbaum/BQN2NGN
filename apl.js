@@ -599,9 +599,6 @@ voc['⍷']=(y,x)=>{
   }
   return A(r,y.s)
 }
-voc._atop=voc['∘']
-voc._fork1=(h,g)=>{asrt(typeof h==='function');return[h,g]}
-voc._fork2=(hg,f)=>{let[h,g]=hg;return(b,a)=>g(h(b,a),toF(f)(b,a))}
 voc['⍕']=(y,x)=>{x&&nyiErr();let t=fmt(y);return A(t.join(''),[t.length,t[0].length])}
 const fmt=x=>{ // as array of strings
   const t=typeof x
@@ -1023,11 +1020,10 @@ const exec=(s,o={})=>{
   while(q.length){
     const scp=q.shift() // scp:scope node
     ,vst=x=>{
-      x.scp=scp
       switch(x[0]){default:asrt(0)
         case':':vst(x[1]);vst(x[2]);break
         case'←':case'↩':vst(x[2]);if(x[3])vst(x[3]);vstLHS(x[1],x[0]==='←');break
-        case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
+        case'X':x.scp=scp;if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
         case'S':case'N':case'J':break
         case'F':case'V':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
         case'{':{
@@ -1045,9 +1041,8 @@ const exec=(s,o={})=>{
       }
     }
     ,vstLHS=(x,d)=>{ // d:declaration
-      x.scp=scp
       switch(x[0]){default:asrt(0)
-        case'X':const s=x[1];if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
+        case'X':x.scp=scp;const s=x[1];if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
         case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d);break
       }
     }
@@ -1064,8 +1059,8 @@ const exec=(s,o={})=>{
              return s==='→'?[CON]:v?[LDC,0,GET,v.d,v.i,MON]:[GET,vars[s].d,vars[s].i]}
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
              if(x.length===2){f=lx}
-             else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y),v=x.scp.v['⍠']
-                                   f=ly.concat(GET,v.d,v.i,lx,DYA)}
+             else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y)
+                                   f=ly.concat(LDC,voc['⍠'],lx,DYA)}
              else{synErrAt(x)}
              return !((x.g&(1<<ADV|1<<CNJ))&&(x.g&(1<<VRB)))?f:[LAM,f.length+1].concat(f,RET)}
     case'S':{const o=x[1].slice(0,1),s=x[1].slice(1,-1).replace(o+o,o);if(o==="'"){s.length===1||synErrAt(x);return[LDC,s]}else return[LDC,A(s.split(''))]}
@@ -1077,9 +1072,10 @@ const exec=(s,o={})=>{
              return allConst?[LDC,A(frags.map(f=>f[1]))]
                             :[].concat.apply([],frags).concat([VEC,x.length-1])}
     case'F':{const d=x.length>3;return(d?rndr(x[3]):[]).concat(rndr(x[2]),rndr(x[1]),d?DYA:MON)}
-    case'T':{const u=x.scp.v._atop,v=x.scp.v._fork1,w=x.scp.v._fork2;let i=x.length-1,r=rndr(x[i--])
-             while(i>=2)r=r.concat(GET,v.d,v.i,rndr(x[i--]),DYA,GET,w.d,w.i,rndr(x[i--]),DYA)
-             return i?r.concat(GET,u.d,u.i,rndr(x[1]),DYA):r}
+    case'T':{let i=x.length-1,r=rndr(x[i--])
+             const fork1=(h,g)=>[h,g],fork2=([h,g],f)=>(b,a)=>g(h(b,a),toF(f)(b,a))
+             while(i>=2)r=r.concat(LDC,fork1,rndr(x[i--]),DYA,LDC,fork2,rndr(x[i--]),DYA)
+             return i?r.concat(LDC,voc['∘'],rndr(x[1]),DYA):r}
   }}
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
