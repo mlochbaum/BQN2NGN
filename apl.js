@@ -188,7 +188,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
   }
   a.push({t:'$',v:'',c:0,o:i,s})
   // AST node types: 'B' a⋄b  ':' a:b  'N' 1  'S' 'a'  'X' a  'J' «a»  '{' {}  '←' a←b  '↩' a↩b
-  //                 'V' 1‿2  'M' +1  'D' 1+2  'A' +´  'C' +⎉2  'T' +÷
+  //                 'V' 1‿2  'T' +÷  'F' +1 | 1+2 | +´ | +⎉2
   i=0 // offset in a
   let fstk=[] // function stack for argument/operand tracking
   const dmnd=x=>a[i].t===x?i++:prsErr()
@@ -231,9 +231,9 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
     for(let i=0;i<a.length;){ // adverbs and conjunctions
       const rand=c=>c===NOUN||c===VRB
       if(rand(h[i])&&i+1<a.length&&h[i+1]===ADV){
-        a.splice(i,2,['A'].concat(a.slice(i,i+2)));h.splice(i,2,VRB)
+        a.splice(i,2,['F'].concat(a.slice(i,i+2).reverse()));h.splice(i,2,VRB)
       }else if(rand(h[i])&&i+2<a.length&&h[i+1]===CNJ&&rand(h[i+2])){
-        a.splice(i,3,['C'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
+        a.splice(i,3,['F'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
       }else{
         i++
       }
@@ -248,7 +248,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
       for(let i=a.length-2;i>=0;i--){
         h[i]===VRB||prsErr(a[i])
         let e=i,d=+(i>0&&h[i-1]===NOUN);i-=d
-        n=[d?'D':'M'].concat(a.slice(i,e+1),[n])
+        n=['F'].concat(a.slice(i,e+1),[n])
       }
       return[n,NOUN]
     }else{
@@ -1029,7 +1029,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
         case'←':case'↩':vst(x[2]);if(x[3])vst(x[3]);vstLHS(x[1],x[0]==='←');break
         case'X':if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
         case'S':case'N':case'J':break
-        case'V':case'M':case'D':case'A':case'C':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
+        case'F':case'V':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
         case'{':{
           const c=x.g&(1<<CNJ)?1:0,o=c||(x.g&(1<<ADV))?1:0
           for(let i=1;i<x.length;i++){
@@ -1076,9 +1076,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
              for(let i=1;i<x.length;i++){const f=rndr(x[i]);frags.push(f);if(f.length!==2||f[0]!==LDC)allConst=0}
              return allConst?[LDC,A(frags.map(f=>f[1]))]
                             :[].concat.apply([],frags).concat([VEC,x.length-1])}
-    case'M':return rndr(x[2]).concat(rndr(x[1]),MON)
-    case'A':return rndr(x[1]).concat(rndr(x[2]),MON)
-    case'D':case'C':return rndr(x[3]).concat(rndr(x[2]),rndr(x[1]),DYA)
+    case'F':{const d=x.length>3;return(d?rndr(x[3]):[]).concat(rndr(x[2]),rndr(x[1]),d?DYA:MON)}
     case'T':{const u=x.scp.v._atop,v=x.scp.v._fork1,w=x.scp.v._fork2;let i=x.length-1,r=rndr(x[i--])
              while(i>=2)r=r.concat(GET,v.d,v.i,rndr(x[i--]),DYA,GET,w.d,w.i,rndr(x[i--]),DYA)
              return i?r.concat(GET,u.d,u.i,rndr(x[1]),DYA):r}
