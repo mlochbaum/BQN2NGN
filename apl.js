@@ -1000,7 +1000,7 @@ voc['⌽'].inverse=(y,x)=>voc['⌽'](y,has(x)?voc['-'](x):undefined)
 voc['⍉'].inverse=(y,x)=>voc['⍉'](y,x,1)
 
 const exec=(s,o={})=>{
-  const t=prs(s,o),b=compile(t,o),e=[preludeData.env[0].slice()] // t:ast,b:bytecode,e:env
+  const [b,t]=compile(prs(s,o),o),e=[preludeData.env[0].slice()] // t:ast,b:bytecode,e:env
   for(let k in t.v)e[0][t.v[k].i]=o.ctx[k]
   const r=vm(b,e)
   for(let k in t.v)o.ctx[k]=e[0][t.v[k].i]
@@ -1010,15 +1010,13 @@ const exec=(s,o={})=>{
          x instanceof Array?'['+x.map(repr).join(',')+']':
          x.repr?x.repr():'{'+Object.keys(x).map(k=>repr(k)+':'+repr(x[k])).join(',')+'}'
 ,compile=(ast,o={})=>{
-  ast.d=0;ast.n=preludeData?preludeData.n:0;ast.v=preludeData?Object.create(preludeData.v):{} // n:nSlots,d:scopeDepth,v:vars
   o.ctx=o.ctx||Object.create(voc)
-  for(let key in o.ctx)if(!ast.v[key]){ // VarInfo{i:slot,d:scopeDepth}
-    const u=o.ctx[key],v=ast.v[key]={i:ast.n++,d:ast.d}
-  }
+  const scp={d:0,n:preludeData?preludeData.n:0,v:preludeData?Object.create(preludeData.v):{}} // n:nSlots,d:scopeDepth,v:vars
+  for(let key in o.ctx)if(!scp.v[key])scp.v[key]={i:scp.n++,d:scp.d} // VarInfo{i:slot,d:scopeDepth}
   const synErrAt=x=>{synErr({file:o.file,offset:x.offset,aplCode:o.aplCode})}
-  const q=[ast] // queue for "body" nodes
+  const q=[[ast,scp]] // queue for "body" nodes
   while(q.length){
-    const scp=q.shift() // scp:scope node
+    const [b,scp]=q.shift() // scp:scope node
     ,vst=x=>{
       switch(x[0]){default:asrt(0)
         case':':vst(x[1]);vst(x[2]);break
@@ -1032,9 +1030,8 @@ const exec=(s,o={})=>{
             const d=scp.d+1+o // slot 3 is reserved for a "base pointer"
             ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]=v[u]={i,d}}
             arg('𝕩','𝕏',0,d);v['∇']={i:1,d};arg('𝕨','𝕎',2,d);v['→']={d}
-
-            q.push(extend(x[i],{scp,d,n:4,v}))
             if(o){if(c)arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2*c,d-1)}
+            q.push([x[i],{d,n:4,v}])
           }
           break
         }
@@ -1046,7 +1043,7 @@ const exec=(s,o={})=>{
         case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d);break
       }
     }
-    for(let i=1;i<scp.length;i++)vst(scp[i])
+    for(let i=1;i<b.length;i++)vst(b[i])
   }
   const rndr=x=>{switch(x[0]){default:asrt(0)
     case'B':{if(x.length===1)return[LDC,A.zld,RET]
@@ -1081,7 +1078,7 @@ const exec=(s,o={})=>{
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
   }}
-  return rndr(ast)
+  return [rndr(ast),scp]
 }
 ,aplify=x=>{
   if(typeof x==='string')return x.length===1?x:A(x)
@@ -1093,8 +1090,8 @@ const exec=(s,o={})=>{
 
 let preludeData
 ;(_=>{
-  const ast=prs(prelude),code=compile(ast),v={},env=[[]];for(let k in ast.v)v[k]=ast.v[k]
-  preludeData={n:ast.n,v,env}
+  const [code,scp]=compile(prs(prelude)),v={},env=[[]];for(let k in scp.v)v[k]=scp.v[k]
+  preludeData={n:scp.n,v,env}
   for(let k in v)env[0][v[k].i]=voc[k]
   vm(code,env)
   for(let k in v)voc[k]=env[0][v[k].i]
