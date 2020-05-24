@@ -235,7 +235,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       if(rand(h[i])&&i+1<a.length&&h[i+1]===ADV){
         a.splice(i,2,['F'].concat(a.slice(i,i+2).reverse()));h.splice(i,2,VRB)
       }else if(rand(h[i])&&i+2<a.length&&h[i+1]===CNJ&&rand(h[i+2])){
-        a.splice(i,3,['F'].concat(a.slice(i,i+3)));h.splice(i,3,VRB)
+        a.splice(i,3,['F'].concat(a.slice(i,i+3).reverse()));h.splice(i,3,VRB)
       }else{
         i++
       }
@@ -442,10 +442,10 @@ voc['\\']=(y,x)=>{
 voc['⊢']=(y,x)=>y
 voc['⊣']=(y,x)=>has(x)?x:y
 voc['˜']=f=>(y,x)=>toF(f)(has(x)?x:y,y)
-voc['∘']=(g,f)=>(y,x)=>f(toF(g)(y,x))
-voc['○']=(g,f)=>(y,x)=>f(g(y),has(x)?g(x):undefined)
-voc['⊸']=(g,f)=>(y,x)=>g(y,toF(f)(has(x)?x:y))
-voc['⟜']=(g,f)=>(y,x)=>f(toF(g)(y),has(x)?x:y)
+voc['∘']=(f,g)=>(y,x)=>f(toF(g)(y,x))
+voc['○']=(f,g)=>(y,x)=>f(g(y),has(x)?g(x):undefined)
+voc['⊸']=(f,g)=>(y,x)=>g(y,toF(f)(has(x)?x:y))
+voc['⟜']=(f,g)=>(y,x)=>f(toF(g)(y),has(x)?x:y)
 voc['⌜']=f=>{
   f=toF(f)
   return(y,x)=>{
@@ -480,7 +480,7 @@ const each=fn=>{
     }
   }
 }
-const rank=(getK,f)=>{
+const rank=(f,getK)=>{
   f=toF(f);getK=toF(getK)
   const efr=(k,r)=>{k=toInt(k);return k<0?Math.min(-k,r):Math.max(r-k,0)} // effective frame
   return(y,x)=>{
@@ -501,7 +501,7 @@ const rank=(getK,f)=>{
 }
 voc['¨']=each
 voc['⎉']=rank
-voc['˘']=f=>rank(-1,f)
+voc['˘']=f=>rank(f,-1)
 voc['⊥']=(y,x)=>{
   asrt(x)
   if(!x.isA||!x.s.length)x=A([x.isA?x.a[0]:x])
@@ -733,7 +733,7 @@ voc['⊔']=(y,x)=>{
     return A(r,[a.length].concat(cs))
   }))
 }
-voc['⍟']=(g,f)=>(y,x)=>{
+voc['⍟']=(f,g)=>(y,x)=>{
   typeof f==='function'||domErr()
   let n=toInt(toF(g)(y,x))
   if(n<0){f=voc['⁼'](f);n=-n}
@@ -815,7 +815,7 @@ voc['´']=f=>(y,x)=>{
   while(i--)x=f(x,cell(i))
   return x
 }
-voc['⍁']=(x,f)=>{
+voc['⍁']=(f,x)=>{
   typeof f==='function'||domErr()
   return withId(x,(y,x)=>f(y,x))
 }
@@ -976,10 +976,10 @@ voc['⍉']=(y,x,inv)=>{
   }
   return A(r,s)
 }
-voc['⍠']=(f,g)=>(y,x)=>(has(x)?f:g)(y,x)
+voc['⍠']=(f,g)=>(y,x)=>(has(x)?g:f)(y,x)
 
 voc['⁼']=f=>f.inverse||domErr()
-voc['+'].inverse=voc['⍠'](voc['˜'](voc['-']),voc['+'])
+voc['+'].inverse=voc['⍠'](voc['+'],voc['˜'](voc['-']))
 voc['-'].inverse=voc['-']
 voc['×'].inverse=withId(1,perv(
   numeric(x=>(x>0)-(x<0),x=>{let d=Math.sqrt(x.re*x.re+x.im*x.im);return smplfy(x.re/d,x.im/d)}),
@@ -1030,7 +1030,7 @@ const exec=(s,o={})=>{
           for(let i=1;i<x.length;i++){
             const d=scp.d+1+op,v=Object.create(scp.v),a=i=>({i,d})
             v['𝕩']=a(0);v['∇']=a(1);if(i>=x.length-1)v['𝕨']=a(2);v['→']={d}
-            if(op){const o=i=>({i,d:d-1});if(c)v['𝕘']=o(0);v['∇∇']=o(1);v['𝕗']=o(2*c)}
+            if(op){const o=i=>({i,d:d-1});v['𝕗']=o(0);v['∇∇']=o(1);if(c)v['𝕘']=o(2)}
             q.push([x[i],{d,n:4,v}])
           }
           break
@@ -1057,7 +1057,7 @@ const exec=(s,o={})=>{
     case'{':{const r=rndr(x[1]),lx=[LAM,r.length].concat(r);let f
              if(x.length===2){f=lx}
              else if(x.length===3){let y=rndr(x[2]),ly=[LAM,y.length].concat(y)
-                                   f=ly.concat(LDC,voc['⍠'],lx,DYA)}
+                                   f=lx.concat(LDC,voc['⍠'],ly,DYA)}
              else{synErrAt(x)}
              return !((x.g&(1<<ADV|1<<CNJ))&&(x.g&(1<<VRB)))?f:[LAM,f.length+1].concat(f,RET)}
     case'S':{const o=x[1].slice(0,1),s=x[1].slice(1,-1).replace(o+o,o);if(o==="'"){s.length===1||synErrAt(x);return[LDC,s]}else return[LDC,A(s.split(''))]}
@@ -1072,7 +1072,7 @@ const exec=(s,o={})=>{
     case'T':{let i=x.length-1,r=rndr(x[i--])
              const fork1=(h,g)=>[h,g],fork2=([h,g],f)=>(b,a)=>g(h(b,a),toF(f)(b,a))
              while(i>=2)r=r.concat(LDC,fork1,rndr(x[i--]),DYA,LDC,fork2,rndr(x[i--]),DYA)
-             return i?r.concat(LDC,voc['∘'],rndr(x[1]),DYA):r}
+             return i?r.concat(LDC,(g,f)=>(y,x)=>f(toF(g)(y,x)),rndr(x[1]),DYA):r}
   }}
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
