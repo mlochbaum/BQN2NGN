@@ -1029,7 +1029,7 @@ const exec=(s,o={})=>{
           const c=x.g&(1<<CNJ)?1:0,op=c||(x.g&(1<<ADV))?1:0
           for(let i=1;i<x.length;i++){
             const d=scp.d+1+op,v=Object.create(scp.v),a=i=>({i,d})
-            v['𝕩']=a(0);v['∇']=a(1);v['𝕨']=a(2);v['→']={d}
+            v['𝕩']=a(0);v['∇']=a(1);if(i>=x.length-1)v['𝕨']=a(2);v['→']={d}
             if(op){const o=i=>({i,d:d-1});if(c)v['𝕘']=o(0);v['∇∇']=o(1);v['𝕗']=o(2*c)}
             q.push([x[i],{d,n:4,v}])
           }
