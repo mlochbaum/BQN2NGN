@@ -130,9 +130,10 @@ Z.gcd=(x,y)=>{
 }
 Z.lcm=(x,y)=>{let p=Z.mul(x,y);return iszero(p)?p:Z.div(p,Z.gcd(x,y))}
 
-const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12,CON=13
+const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,EXP=8,RET=9,POP=10,SPL=11,JEQ=12,EMB=13,CON=14
 ,Proc=function(b,p,size,h){this.b=b;this.p=p;this.size=size;this.h=h;this.toString=_=>'#procedure'}
 ,toFn=f=>(x,y)=>vm(f.b,f.h.concat([[x,f,y,null]]),f.p)
+,exp=(b,h,p,dy)=>(y,x)=>{dy===has(x)||synErr();return vm(b,h.concat([[]]),p,dy?[y,x]:[y])}
 ,vm=(b,h,p=0,t=[])=>{while(1)switch(b[p++]){default:asrt(0) // b:bytecode,h:environment,p:program counter,t:stack
   case LDC:t.push(b[p++]);break
   case VEC:{t.push(A(t.splice(t.length-b[p++])));break}
@@ -154,6 +155,7 @@ const LDC=1,VEC=2,GET=3,SET=4,MON=5,DYA=6,LAM=7,RET=8,POP=9,SPL=10,JEQ=11,EMB=12
             else t.push(f)
             break}
   case LAM:{let size=b[p++];t.push(new Proc(b,p,size,h));p+=size;break}
+  case EXP:{let size=b[p++],dy=b[p++];t.push(exp(b,h,p,dy));p+=size;break}
   case RET:{if(t.length===1)return t[0];[b,p,h]=t.splice(-4,3);break}
   case POP:{t.pop();break}
   case SPL:{const n=b[p++],v=t[t.length-1];v.isA||domErr();v.a.length===n||lenErr()
@@ -220,10 +222,17 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       }
       if(x.length===2)x=x[1];else c=NOUN
       let t=a[i].t;if('←↩'.includes(t)){
-        i++;let e=expr(),f;if(t==='↩'&&c===VRB&&e[1]===NOUN&&r.length){f=x;x=r.pop();h.pop()};c=e[1]
-        const chkX=x=>x[0]==='X'&&x[1]!=='∇'&&x[1]!=='→'&&x[2]===c||prsErr(x),
-        chk=c!==NOUN?chkX:(x=>{if(x[0]==='V')for(let i=1;i<x.length;i++)chk(x[i]);else chkX(x)})
-        chk(x)
+        i++;let e=expr(),f;if(t==='↩'&&c===VRB&&e[1]===NOUN&&r.length){f=x;x=r.pop();h.pop();c=e[1]}else if(c!==e[1])synErr()
+        const chk=x=>{
+          if(x[0]==='V')for(let i=1;i<x.length;i++)chk(x[i])
+          else x[0]==='X'&&x[1]!=='∇'&&x[1]!=='→'||prsErr(x)
+        }
+        if(t==='←'&&x[0]==='F'){
+          const chkF=x=>{if(x[0]==='F'){chkF(x[x.length-2]);if(x.length>3){chk(x[1]);chk(x[3])}else{chk(x[2])}}else chk(x)}
+          chkF(x);t='E' // explicit definition
+        }else{
+          chk(x)
+        }
         x=[t,x,e[0],f]
       }
       r.push(x);h.push(c);if(')}⟩:;⋄$'.includes(a[i].t))return parseExpr(r,h)
@@ -1021,7 +1030,7 @@ const exec=(s,o={})=>{
     ,vst=x=>{
       switch(x[0]){default:asrt(0)
         case':':vst(x[1]);vst(x[2]);break
-        case'←':case'↩':vst(x[2]);if(x[3])vst(x[3]);vstLHS(x[1],x[0]==='←');break
+        case'←':case'↩':vst(x[2]);if(x[3])vst(x[3]);vstLHS(x[1],x[0]==='←',scp);break
         case'X':x.scp=scp;if(!(scp.v['get_'+x[1]]||scp.v[x[1]]))valErr({file:o.file,offset:x.offset,aplCode:o.aplCode});break
         case'S':case'N':case'J':break
         case'F':case'V':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
@@ -1035,12 +1044,20 @@ const exec=(s,o={})=>{
           }
           break
         }
+        case'E':{
+          let d=scp.d,f=x[1];while(f[0]==='F'){d++;f=f[f.length-2]}
+          vstLHS(f,1,scp)
+          let ascp={d,n:0,v:Object.create(scp.v)},va=x=>vstLHS(x,1,ascp)
+          f=x[1];while(f[0]==='F'){if(f.length>3){va(f[1]);va(f[3])}else{va(f[2])}f=f[f.length-2];ascp.d--}
+          ascp.d=d;q.push([['B',x[2]],ascp])
+          break
+        }
       }
     }
-    ,vstLHS=(x,d)=>{ // d:declaration
+    ,vstLHS=(x,d,scp)=>{ // d:declaration
       switch(x[0]){default:asrt(0)
         case'X':x.scp=scp;const s=x[1];if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
-        case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d);break
+        case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d,scp);break
       }
     }
     for(let i=1;i<b.length;i++)vst(b[i])
@@ -1060,6 +1077,9 @@ const exec=(s,o={})=>{
                                    f=lx.concat(LDC,voc['⍠'],ly,DYA)}
              else{synErrAt(x)}
              return !((x.g&(1<<ADV|1<<CNJ))&&(x.g&(1<<VRB)))?f:[LAM,f.length+1].concat(f,RET)}
+    case'E':{let b=rndr(x[2]),f=x[1],arg=a=>rndrLHS(a).concat(POP)
+             while(f[0]==='F'){let dy=f.length>3;b=(dy?arg(f[1]).concat(arg(f[3])):arg(f[2])).concat(b,RET);b=[EXP,b.length,dy].concat(b);f=f[f.length-2]}
+             return b.concat(rndrLHS(f))}
     case'S':{const o=x[1].slice(0,1),s=x[1].slice(1,-1).replace(o+o,o);if(o==="'"){s.length===1||synErrAt(x);return[LDC,s]}else return[LDC,A(s.split(''))]}
     case'N':{const a=x[1].replace(/¯/g,'-').split(/j/i).map(x=>x==='∞'?Infinity:x==='-∞'?-Infinity:parseFloat(x))
              return[LDC,a[1]?new Z(a[0],a[1]):a[0]]}

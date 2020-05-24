@@ -651,6 +651,7 @@ C←{}⋄x←{C↩→⋄1}⍬⋄{x=1:C 2⋄x}⍬ ←→ 2
 {𝕩=0:1⋄2×∇𝕩-1}5 ←→ 32
 {𝕩<2:1⋄(∇𝕩-1)+∇𝕩-2}8 ←→ 34
 <{𝔽𝔽𝕩}"ab" ←→ <<"ab"
+<{𝔽𝔽 }"ab" ←→ <<"ab"
 <{𝔽𝔾𝕩}⌽"ab" ←→ <"ba"
 +{𝕩𝔽𝕩}1‿2 ←→ 2‿4
 _f←{𝕩𝔽𝕩}⋄+_f 1‿2 ←→ 2‿4
@@ -661,6 +662,23 @@ _2←{𝔽𝔽𝕩;𝕨𝔽𝕨𝔽𝕩}⋄⋆_2 2 ←→ 1618.1779919126539
 _2←{𝔽𝔽𝕩;𝕨𝔽𝕨𝔽𝕩}⋄3⋆_2 2 ←→ 19683
 _H_←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄+_H_÷2 ←→ 2.5
 _H_←{𝕩𝔽𝔾𝕩;𝕨𝔽𝔾𝕩}⋄7+_H_÷2 ←→ 7.5
+(a F b)←a‿b⋄3 F 2‿1 ←→ ⟨3,2‿1⟩
+(a F b)←a‿b⋄F 2‿1 !! SYNTAX ERROR
+(F x)←x‿x⋄2 F 3 !! SYNTAX ERROR
+(F c)←𝕨 !! SYNTAX ERROR
+(F c)←d !! VALUE ERROR
+(F x)←x×F⍟(1⊸<)x-1⋄F 5 ←→ 120
+(a‿c F b)←⟨a⋄b⋄c⟩⋄↕⊸F 2 ←→ 0‿2‿1
+(F _2)←F F⋄⍋_2 "cab" ←→ 2‿0‿1
+(F _o_ G x)←F G x⋄<_o_⌽"ab" ←→ <"ba"
+(F _s x)←x F x⋄=_s 1‿2 ←→ 1‿1
+(⟨h,⟨hh,ht⟩⟩ F _op d)←h F d + hh F ht⋄3‿(4‿2)÷_op 1 ←→ 1
+(F a‿b‿c)←a+b-c⋄F↕2 !! LENGTH ERROR
+(F a‿b‿c)←a+b-c⋄F 2 !! DOMAIN ERROR
+(a‿b‿c _op)←(a+b-c){𝔽}⋄N←(↕3)_op⋄n ←→¯1
+(a‿b‿c _op)←(a+b-c){𝔽}⋄-_op !! DOMAIN ERROR
+(F _op)←F∾F⋄-_op_+ !! SYNTAX ERROR
+(F a)←c←2+a⋄F 3⋄c !! VALUE ERROR
 ≢"" ←→ ⥊0
 ≢'x' ←→ ⍬
 ≢"xx" ←→ ⥊2
