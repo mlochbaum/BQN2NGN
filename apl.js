@@ -184,6 +184,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
       if(v[0]==='_'){c=ADV;let e=v.length-1;if(v[e]==='_')c=CNJ;else e++;v=v.slice(1,e).toLowerCase()}
       else if(/[•A-Za-z]/.test(v[0])){c=/[A-Z]/.test(v[v[0]==='•'?1:0])?VRB:NOUN;v=v.toLowerCase()}
       else c=/[˜¨˘⁼⌜´`]/.test(v)?ADV:/[⊸∘○⟜⌾⚇⎉⍟⍠⍁]/.test(v)?CNJ:/𝕗|𝕘|𝕨|𝕩|[⍬π]/.test(v)?NOUN:VRB
+      let i=Array.from('𝔽𝔾𝕎𝕏').indexOf(v);if(i!==-1)v=Array.from('𝕗𝕘𝕨𝕩')[i]
     }
     if(t!=='-')a.push({t,v,c,o,s}) // t:type, v:value, c:syntactic class, o:offset
   }
@@ -204,7 +205,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
     }
   }
   ,expr=_=>{
-    const argt=s=>/^(𝕗|𝔽|∇∇)$/.test(s)?1<<ADV:/^(𝕘|𝔾)$/.test(s)?1<<CNJ:/^(𝕨|𝕩|𝕎|𝕏)$/.test(s)?1<<VRB:0
+    const argt=s=>s==='𝕗'||s==='∇∇'?1<<ADV:s==='𝕘'?1<<CNJ:s==='𝕨'||s==='𝕩'?1<<VRB:0
     let r=[],h=[] // components and their syntactic classes
     while(1){
       let x=['V'],c=0;while(1){
@@ -1025,12 +1026,11 @@ const exec=(s,o={})=>{
         case'S':case'N':case'J':break
         case'F':case'V':case'T':for(let i=x.length;i-->1;)vst(x[i]);break
         case'{':{
-          const c=x.g&(1<<CNJ)?1:0,o=c||(x.g&(1<<ADV))?1:0
+          const c=x.g&(1<<CNJ)?1:0,op=c||(x.g&(1<<ADV))?1:0
           for(let i=1;i<x.length;i++){
-            const d=scp.d+1+o // slot 3 is reserved for a "base pointer"
-            ,v=Object.create(scp.v),arg=(l,u,i,d)=>{v[l]=v[u]={i,d}}
-            arg('𝕩','𝕏',0,d);v['∇']={i:1,d};arg('𝕨','𝕎',2,d);v['→']={d}
-            if(o){if(c)arg('𝕘','𝔾',0,d-1);v['∇∇']={i:1,d:d-1};arg('𝕗','𝔽',2*c,d-1)}
+            const d=scp.d+1+op,v=Object.create(scp.v),a=i=>({i,d})
+            v['𝕩']=a(0);v['∇']=a(1);v['𝕨']=a(2);v['→']={d}
+            if(op){const o=i=>({i,d:d-1});if(c)v['𝕘']=o(0);v['∇∇']=o(1);v['𝕗']=o(2*c)}
             q.push([x[i],{d,n:4,v}])
           }
           break
