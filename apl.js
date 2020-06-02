@@ -224,6 +224,7 @@ const NOUN=1,VRB=2,ADV=3,CNJ=4
         i++;let e=expr(),f;if(t==='↩'&&c===VRB&&e[1]===NOUN&&r.length){f=x;x=r.pop();h.pop();c=e[1]}else if(c!==e[1])synErr()
         const chk=x=>{
           if(x[0]==='V')for(let i=1;i<x.length;i++)chk(x[i])
+          else if(c===NOUN&&t==='↩'&&x[0]==='F')chk(x[x.length-1]) // selective assignment
           else x[0]==='X'&&x[1]!=='∇'&&x[1]!=='→'||prsErr(x)
         }
         if(t==='←'&&x[0]==='F'){
@@ -990,9 +991,9 @@ voc['⊣'].inverse=(y,x)=>has(x)?domErr():y
 voc['<'].inverse=(y,x)=>has(x)||!y.isA||y.s.length?domErr():y.a[0]
 voc['⌽'].inverse=(y,x)=>voc['⌽'](y,has(x)?voc['-'](x):undefined)
 voc['⍉'].inverse=(y,x)=>voc['⍉'](y,x,1)
+voc['•ucs'].inverse=voc['•ucs']
 
-const amend=(y,g,r)=>{
-  const i=g({isI:1,a:y,p:[]})
+const amend=(y,i,r)=>{
   let v=Array(1),z=[y]
   const am=(i,r)=>{
     if(!i.isA){
@@ -1011,6 +1012,7 @@ const amend=(y,g,r)=>{
   am(i,r)
   return z[0]
 }
+,toI=y=>({isI:1,a:y,p:[]})
 ,ItoS=y=>y.isI?y.a:y
 ,ItoA=y=>{
   if(!y.isI)return y;
@@ -1019,7 +1021,7 @@ const amend=(y,g,r)=>{
 }
 voc['⌾']=(f,g)=>(y,x)=>{
   const r=toF(f)(g(y),has(x)?g(x):undefined)
-  try{return inverse(g)(r)}catch(e){return amend(y,g,r)}
+  try{return inverse(g)(r)}catch(e){return amend(y,g(toI(y)),r)}
 }
 
 const exec=(s,o={})=>{
@@ -1071,6 +1073,7 @@ const exec=(s,o={})=>{
       switch(x[0]){default:asrt(0)
         case'X':x.scp=scp;const s=x[1];if(d){!scp.v[s]||synErrAt(x);scp.v[s]={d:scp.d,i:scp.n++}}else{scp.v[s]||synErrAt(x)};break
         case'V':for(let i=1;i<x.length;i++)vstLHS(x[i],d,scp);break
+        case'F':asrt(!d);let i=x.length-1;vstLHS(x[i],d,scp);while(i-->1)vst(x[i]);break
       }
     }
     for(let i=1;i<b.length;i++)vst(b[i])
@@ -1110,6 +1113,12 @@ const exec=(s,o={})=>{
   const rndrLHS=x=>{switch(x[0]){default:asrt(0)
     case'X':{const s=x[1],vars=x.scp.v,v=vars['set_'+s];return v?[GET,v.d,v.i,MON]:[SET,vars[s].d,vars[s].i]}
     case'V':{const n=x.length-1,a=[SPL,n];for(let i=1;i<x.length;i++){a.push.apply(a,rndrLHS(x[i]));a.push(POP)};return a}
+    case'F':{let i=x;while(i[0]==='F')i=i[i.length>3?3:2]
+             return rndrSel(x).concat([LDC,((i,y)=>r=>amend(y,i,r))],rndr(i),[DYA,MON],rndrLHS(i))}
+  }}
+  const rndrSel=x=>{switch(x[0]){default:asrt(0)
+    case'F':return x.length>3?rndrSel(x[3]).concat(rndr(x[2]),rndr(x[1]),DYA):rndrSel(x[2]).concat(rndr(x[1]),MON)
+    case'X':{const s=x[1],v=x.scp.v[s];return[GET,v.d,v.i,LDC,toI,MON]}
   }}
   return [rndr(ast),scp]
 }
