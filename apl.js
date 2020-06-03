@@ -829,20 +829,12 @@ voc['⍁']=(f,x)=>{
   typeof f==='function'||domErr()
   return withId(x,(y,x)=>f(y,x))
 }
-/*
 voc['`']=f=>(y,x)=>{
-  asrt(x==null)
-  if(!y.s.length)return y
-  h=h?toInt(h,0,y.s.length):y.s.length-1
-  const ni=prd(y.s.slice(0,h)), nj=y.s[h], nk=prd(y.s.slice(h+1)), r=Array(ni*nj*nk)
-  if(r.length)for(let i=0;i<ni;i++)for(let j=0;j<nj;j++)for(let k=0;k<nk;k++){
-    let u=y.a[(i*nj+j)*nk+k];u=u.isA?u:A.scal(u)
-    for(let l=j-1;l>=0;l--){let v=y.a[(i*nj+l)*nk+k];u=f(u,v.isA?v:A.scal(v))}
-    r[(i*nj+j)*nk+k]=u.s.length?u:unw(u)
-  }
+  has(x)&&domErr();y=ItoA(y);y.isA&&y.s.length||domErr();if(!y.a.length)return y
+  const n=y.s[0],l=prd(y.s.slice(1)),r=Array(n*l)
+  let i=0;for(;i<l;i++)r[i]=y.a[i];for(;i<r.length;i++)r[i]=f(y.a[i],r[i-l])
   return A(r,y.s)
 }
-*/
 voc['/']=(y,x)=>{
   if(has(x)){
     y=toA(ItoA(y));const xa=getVec(x),a=x.isA&&x.s.length?1:0,n=y.s.length?y.s[0]:1
