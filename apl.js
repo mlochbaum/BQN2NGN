@@ -880,15 +880,20 @@ voc['/'].inverse=(y,x)=>{
 }
 voc['⊑']=(y,x)=>{
   y=ItoA(y);y.isA||domErr()
-  let i=0
   if(has(x)){
-    let a=getVec(x);a.length===y.s.length||rnkErr()
-    for(let s=0;s<a.length;s++){
-      const u=a[s];isInt(u,0,y.s[s])||idxErr()
-      i=i*y.s[s]+u
+    const s=a=>{
+      a.length===y.s.length||rnkErr()
+      let i=0;for(let s=0;s<a.length;s++){
+        const u=a[s];u.isA&&domErr();isInt(u,0,y.s[s])||idxErr()
+        i=i*y.s[s]+u
+      }
+      return y.a[i]
     }
+    const p=x=>!x.isA?domErr():x.a.length&&x.a[0].isA?each(p)(x):s(getVec(x))
+    return x.isA?p(x):s([x])
+  }else{
+    return y.a.length?y.a[0]:0
   }
-  return y.a.length?y.a[i]:0
 }
 voc['⊏']=(y,x)=>{
   y=ItoA(y);y.isA&&y.s.length||rnkErr()
