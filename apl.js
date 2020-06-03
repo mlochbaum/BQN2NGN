@@ -1,10 +1,8 @@
 //usr/bin/env node "$0" $@;exit $?
 'use strict'
-// \ ⚇
 const prelude=`
 ⍬←⟨⟩ ⋄ •d←"0123456789" ⋄ •a←"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ¬←(1+-)⍁1
-⊏↩⊣´⍠⊏
 ↓←{s←(≠𝕨)(⊣↑⊢∾˜1⥊˜0⌈-⟜≠)≢𝕩 ⋄ ((s×¯1⋆𝕨>0)+(-s)⌈s⌊𝕨)↑𝕩}
 ↑↩((↕1+≠)↑¨<)⍠↑
 ↓↩((↕1+≠)↓¨<)⍠↓
@@ -894,14 +892,18 @@ voc['⊑']=(y,x)=>{
 }
 voc['⊏']=(y,x)=>{
   y=ItoA(y);y.isA&&y.s.length||rnkErr()
-  const l=y.s[0],cs=y.s.slice(1),c=prd(cs)
-  let a=[0],s=cs;if(has(x)){if(x.isA){a=x.a;s=x.s.concat(cs)}else{a=[x]}}
-  let r=Array(a.length*c)
-  for(let i=0;i<a.length;i++){
-    const u=a[i];isInt(u,0,l)||idxErr()
-    for(let j=0;j<c;j++)r[i*c+j]=y.a[u*c+j]
+  let inds=[[0]],s=[];if(has(x)){if(!x.isA){inds=[[x]]}else{
+    let b=x.a.length&&x.a[0].isA?Array.from(x.a):[x]
+    inds=b.map(x=>(x.isA||domErr(),x.a));s=[].concat.apply([],b.map(x=>x.s))
+  }}
+  for(let i=0;i<inds.length;i++)for(let j=0;j<inds[i].length;j++)isInt(inds[i][j],0,y.s[i])||idxErr()
+  const cs=y.s.slice(inds.length),c=prd(cs)
+  let r=Array(prd(s)*c),i=inds.map(_=>0),yi=0;for(let a=i.length,m=c;a--;m*=y.s[a])yi+=m*inds[a][0]
+  for(let ri=0;ri<r.length;ri+=c){
+    for(let j=0;j<c;j++)r[ri+j]=y.a[yi+j]
+    for(let a=i.length,m=c;a--;m*=y.s[a]){let j=i[a],k=j,z=inds[a];if(++k===z.length)k=0;yi+=m*(z[k]-z[j]);i[a]=k;if(k)break}
   }
-  return A(r,s)
+  return A(r,s.concat(cs))
 }
 voc['↑']=(y,x)=>{
   has(x)||nyiErr()
